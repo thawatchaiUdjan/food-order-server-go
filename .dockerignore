@@ -1,0 +1,7 @@
+dockerfile
+docker-compose.yaml
+tmp
+fresh.conf
+.dockerignore
+.gitignore
+.env
