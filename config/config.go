@@ -8,6 +8,7 @@ import (
 
 type DatabaseConfig struct {
 	Host string
+	Name string
 }
 
 type GoogleConfig struct {
@@ -51,6 +52,7 @@ func LoadConfig() Config {
 		JWTSecret: os.Getenv("JWT_SECRET"),
 		Database: DatabaseConfig{
 			Host: os.Getenv("DB_CONNECTION_STRING_MONGO"),
+			Name: "food_order_db",
 		},
 		Cloudinary: CloudinaryConfig{
 			ApiName:   os.Getenv("CLOUDINARY_NAME"),

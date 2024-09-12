@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 
+	"github.com/food-order-server/config"
 	"github.com/food-order-server/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,8 +14,9 @@ type FoodService struct {
 }
 
 func CreateFoodService(client *mongo.Client) *FoodService {
+	config := config.LoadConfig()
 	return &FoodService{
-		collection: client.Database("food_order_db").Collection("foods"),
+		collection: client.Database(config.Database.Name).Collection("foods"),
 	}
 }
 
