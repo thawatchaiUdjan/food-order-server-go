@@ -62,4 +62,14 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 		return c.JSON(result)
 	}, middlewares.AuthToken)
 
+	route.Delete("/", func(c fiber.Ctx) error {
+		req := c.Locals("user").(models.UserReq)
+
+		result, err := userService.Remove(req.User.UserID)
+		if err != nil {
+			return fiber.ErrInternalServerError
+		}
+
+		return c.JSON(result)
+	}, middlewares.AuthToken)
 }

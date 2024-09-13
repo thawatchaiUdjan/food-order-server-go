@@ -68,6 +68,14 @@ func (s *UserService) Update(id string, userBody *models.User) (*models.UserData
 	return result, nil
 }
 
+func (s *UserService) Remove(id string) (*models.MessageRes, error) {
+	user := new(models.User)
+	if err := s.collection.FindOneAndDelete(context.TODO(), bson.M{"user_id": id}).Decode(&user); err != nil {
+		return nil, err
+	}
+	return &models.MessageRes{Message: "Delete account successfully"}, nil
+}
+
 func (s *UserService) UpdateUser(id string, userBody *models.User) (*models.UserDataRes, error) {
 	user := new(models.User)
 	update := utils.CreateBSON(userBody)
