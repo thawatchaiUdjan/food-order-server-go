@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/food-order-server/config"
+	"github.com/food-order-server/models"
 	"github.com/gofiber/fiber/v3"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -15,7 +16,7 @@ func AuthToken(c fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusUnauthorized, "No token provided. Access denied")
 	}
 
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &models.Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(config.JWTSecret), nil
 	})
 	if err == jwt.ErrTokenExpired {
@@ -24,10 +25,14 @@ func AuthToken(c fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusUnauthorized, "Invalid token")
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		c.Locals("user", claims)
+	if claims, ok := token.Claims.(*models.Claims); ok && token.Valid {
+		userReq := models.UserReq{
+			User:  claims.User,
+			Token: tokenString,
+		}
+		c.Locals("user", userReq)
 		return c.Next()
 	}
 
-	return fiber.NewError(fiber.StatusUnauthorized, "Invalid token")
+	return fiber.NewError(fiber.StatusUnauthorized, "Invalid token, Please try again later")
 }

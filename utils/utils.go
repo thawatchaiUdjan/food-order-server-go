@@ -11,11 +11,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type Claims struct {
-	User models.User
-	jwt.RegisteredClaims
-}
-
 func CreateToken(user *models.User) (string, error) {
 	config := config.LoadConfig()
 	duration, err := time.ParseDuration(config.Token.TokenExpiredTime)
@@ -24,7 +19,7 @@ func CreateToken(user *models.User) (string, error) {
 	}
 
 	expiredTime := time.Now().Add(duration)
-	claims := Claims{
+	claims := models.Claims{
 		User: *user,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expiredTime),
