@@ -5,6 +5,7 @@ import (
 
 	"github.com/food-order-server/config"
 	"github.com/food-order-server/db"
+	"github.com/food-order-server/middlewares"
 	"github.com/food-order-server/routes"
 	"github.com/gofiber/fiber/v3"
 )
@@ -16,9 +17,12 @@ func main() {
 		log.Fatal("Fail to connect database: ", err)
 	}
 
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		StructValidator: middlewares.CreateValidator(),
+	})
 
 	routes.FoodRoute(app, db)
+	routes.UserRoute(app, db)
 
 	log.Fatal(app.Listen(":" + config.Port))
 }
