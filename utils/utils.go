@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"reflect"
 	"time"
 
 	"github.com/food-order-server/config"
@@ -8,6 +9,8 @@ import (
 	"github.com/gofiber/fiber/v3"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -53,4 +56,28 @@ func HashPassword(password string) (string, error) {
 
 func GenerateUuid() string {
 	return uuid.NewString()
+}
+
+func CreateBSON(model interface{}) bson.M {
+	result := bson.M{}
+
+	v := reflect.ValueOf(model).Elem()
+	t := v.Type()
+
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		tag := t.Field(i).Tag.Get("bson")
+
+		if tag == "" || reflect.DeepEqual(field.Interface(), reflect.Zero(field.Type()).Interface()) {
+			continue
+		}
+
+		result[tag] = field.Interface()
+	}
+
+	return bson.M{"$set": result}
+}
+
+func GetUpdateOption() *options.FindOneAndUpdateOptions {
+	return options.FindOneAndUpdate().SetReturnDocument(options.After)
 }

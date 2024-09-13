@@ -47,17 +47,41 @@ func (s *UserService) Register(userBody *models.UserRegisterReq) (*models.UserDa
 		return nil, err
 	}
 
-	newUser, err := s.createUser(userBody.Username, userBody.Password, userBody.Name)
+	result, err := s.createUser(userBody.Username, userBody.Password, userBody.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := utils.CreateToken(newUser)
+	token, err := utils.CreateToken(result)
 	if err != nil {
 		return nil, err
 	}
 
-	return &models.UserDataRes{User: *newUser, Token: token}, nil
+	return &models.UserDataRes{User: *result, Token: token}, nil
+}
+
+func (s *UserService) Update(id string, userBody *models.User) (*models.UserDataRes, error) {
+	result, err := s.UpdateUser(id, userBody)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (s *UserService) UpdateUser(id string, userBody *models.User) (*models.UserDataRes, error) {
+	user := new(models.User)
+	update := utils.CreateBSON(userBody)
+	option := utils.GetUpdateOption()
+	if err := s.collection.FindOneAndUpdate(context.TODO(), bson.M{"user_id": id}, update, option).Decode(&user); err != nil {
+		return nil, err
+	}
+
+	token, err := utils.CreateToken(user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.UserDataRes{User: *user, Token: token}, nil
 }
 
 func (s *UserService) createUser(username string, password string, name string) (*models.User, error) {
@@ -69,7 +93,7 @@ func (s *UserService) createUser(username string, password string, name string) 
 		}
 	}
 
-	newUser := &models.User{
+	user := &models.User{
 		UserID:    utils.GenerateUuid(),
 		Username:  username,
 		Password:  password,
@@ -80,7 +104,7 @@ func (s *UserService) createUser(username string, password string, name string) 
 		UpdatedAt: time.Now(),
 	}
 
-	if _, err := s.collection.InsertOne(context.TODO(), newUser); err != nil {
+	if _, err := s.collection.InsertOne(context.TODO(), user); err != nil {
 		return nil, err
 	}
 
