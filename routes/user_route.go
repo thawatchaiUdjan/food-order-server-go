@@ -9,9 +9,9 @@ import (
 
 func UserRoute(app *fiber.App, db *mongo.Database) {
 	userService := services.CreateUserService(db)
-	userRoute := app.Group("/user")
+	route := app.Group("/user")
 
-	userRoute.Post("/login", func(c fiber.Ctx) error {
+	route.Post("/login", func(c fiber.Ctx) error {
 		userBody := new(models.UserLoginReq)
 
 		if err := c.Bind().Body(userBody); err != nil {
@@ -28,7 +28,7 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 		return c.JSON(user)
 	})
 
-	userRoute.Post("/register", func(c fiber.Ctx) error {
+	route.Post("/register", func(c fiber.Ctx) error {
 		userBody := new(models.UserRegisterReq)
 
 		if err := c.Bind().Body(userBody); err != nil {
@@ -44,4 +44,5 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 
 		return c.JSON(user)
 	})
+
 }

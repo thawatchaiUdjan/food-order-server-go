@@ -9,9 +9,9 @@ import (
 
 func FoodRoute(app *fiber.App, db *mongo.Database) {
 	foodService := services.CreateFoodService(db)
-	foodRoute := app.Group("/foods", middlewares.AuthToken)
+	route := app.Group("/foods", middlewares.AuthToken)
 
-	foodRoute.Get("/", func(c fiber.Ctx) error {
+	route.Get("/", func(c fiber.Ctx) error {
 		foods, err := foodService.GetFoods()
 		if err != nil {
 			return fiber.ErrInternalServerError
