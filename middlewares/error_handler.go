@@ -17,7 +17,7 @@ func ErrorHandler(c fiber.Ctx, err error) error {
 	switch status {
 	case fiber.StatusBadRequest:
 		message = "An error occurred. Invalid request body."
-	default:
+	case fiber.StatusInternalServerError:
 		message = "An unexpected error occurred. Please try again later."
 	}
 

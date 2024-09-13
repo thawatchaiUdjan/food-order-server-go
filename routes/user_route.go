@@ -20,7 +20,7 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 
 		user, err := userService.Login(userBody)
 		if err == fiber.ErrBadRequest {
-			return fiber.NewError(fiber.StatusNoContent, "Username or password invalid")
+			return fiber.NewError(fiber.StatusUnauthorized, "Username or password invalid")
 		} else if err != nil {
 			return fiber.ErrInternalServerError
 		}
