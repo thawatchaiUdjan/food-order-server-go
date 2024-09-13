@@ -18,7 +18,8 @@ func main() {
 	}
 
 	app := fiber.New(fiber.Config{
-		StructValidator: middlewares.CreateValidator(),
+		StructValidator: middlewares.Validator(),
+		ErrorHandler:    middlewares.ErrorHandler,
 	})
 
 	routes.FoodRoute(app, db)

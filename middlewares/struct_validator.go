@@ -10,6 +10,6 @@ func (v *StructValidator) Validate(out any) error {
 	return v.Validator.Struct(out)
 }
 
-func CreateValidator() *StructValidator {
+func Validator() *StructValidator {
 	return &StructValidator{Validator: validator.New()}
 }

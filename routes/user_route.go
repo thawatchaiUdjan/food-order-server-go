@@ -1,8 +1,6 @@
 package routes
 
 import (
-	"fmt"
-
 	"github.com/food-order-server/models"
 	"github.com/food-order-server/services"
 	"github.com/gofiber/fiber/v3"
@@ -17,21 +15,14 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 		userBody := new(models.UserLoginReq)
 
 		if err := c.Bind().Body(userBody); err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(models.MessageRes{
-				Message: "An error occurred. Invalid request body",
-			})
+			return fiber.ErrBadRequest
 		}
 
 		user, err := userService.Login(userBody)
 		if err == fiber.ErrBadRequest {
-			return c.Status(fiber.StatusBadRequest).JSON(models.MessageRes{
-				Message: "Username or password invalid",
-			})
+			return fiber.NewError(fiber.StatusNoContent, "Username or password invalid")
 		} else if err != nil {
-			fmt.Print(err.Error())
-			return c.Status(fiber.StatusInternalServerError).JSON(models.MessageRes{
-				Message: "An unexpected error occurred. Please try again later",
-			})
+			return fiber.ErrInternalServerError
 		}
 
 		return c.JSON(user)
@@ -41,21 +32,14 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 		userBody := new(models.UserRegisterReq)
 
 		if err := c.Bind().Body(userBody); err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(models.MessageRes{
-				Message: "An error occurred. Invalid request body",
-			})
+			return fiber.ErrBadRequest
 		}
 
 		user, err := userService.Register(userBody)
 		if err == fiber.ErrConflict {
-			return c.Status(fiber.StatusBadRequest).JSON(models.MessageRes{
-				Message: "Username is already in use",
-			})
+			return fiber.NewError(fiber.StatusConflict, "Username is already in use")
 		} else if err != nil {
-			fmt.Print(err.Error())
-			return c.Status(fiber.StatusInternalServerError).JSON(models.MessageRes{
-				Message: "An unexpected error occurred. Please try again later",
-			})
+			return fiber.ErrInternalServerError
 		}
 
 		return c.JSON(user)
