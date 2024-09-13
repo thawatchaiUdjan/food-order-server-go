@@ -7,13 +7,16 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func FoodRoute(app *fiber.App, db *mongo.Client) {
+func FoodRoute(app *fiber.App, db *mongo.Database) {
 	foodService := services.CreateFoodService(db)
+	foodRoute := app.Group("/foods")
 
-	app.Get("/foods", func(c fiber.Ctx) error {
+	foodRoute.Get("/", func(c fiber.Ctx) error {
 		foods, err := foodService.GetFoods()
 		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(models.MessageRes{Message: "An unexpected error occurred. Please try again later" + err.Error()})
+			return c.Status(fiber.StatusInternalServerError).JSON(models.MessageRes{
+				Message: "An unexpected error occurred. Please try again later",
+			})
 		}
 		return c.JSON(foods)
 	})
