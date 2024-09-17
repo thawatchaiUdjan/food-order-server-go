@@ -26,6 +26,7 @@ func main() {
 
 	routes.FoodRoute(app, db)
 	routes.UserRoute(app, db)
+	routes.FoodCategoryRoute(app, db)
 
 	log.Fatal(app.Listen(":" + config.Port))
 }
