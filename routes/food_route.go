@@ -12,7 +12,7 @@ func FoodRoute(app *fiber.App, db *mongo.Database) {
 	route := app.Group("/foods", middlewares.AuthToken)
 
 	route.Get("/", func(c fiber.Ctx) error {
-		foods, err := foodService.GetFoods()
+		foods, err := foodService.FindAll()
 		if err != nil {
 			return fiber.ErrInternalServerError
 		}
