@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
 	"reflect"
 	"time"
 
@@ -56,6 +58,14 @@ func HashPassword(password string) (string, error) {
 
 func GenerateUuid() string {
 	return uuid.NewString()
+}
+
+func GenerateHash(input string) string {
+	hash := sha256.New()
+	hash.Write([]byte(input))
+	hashSum := hash.Sum(nil)
+
+	return base64.RawURLEncoding.EncodeToString(hashSum)
 }
 
 func CreateBSON(model interface{}) bson.M {

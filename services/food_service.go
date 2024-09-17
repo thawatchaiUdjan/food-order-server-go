@@ -2,8 +2,10 @@ package services
 
 import (
 	"context"
+	"time"
 
 	"github.com/food-order-server/models"
+	"github.com/food-order-server/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -41,8 +43,23 @@ func (s *FoodService) FindAll() ([]models.Food, error) {
 	return results, nil
 }
 
-func (s *FoodService) Create(id string, foodBody *models.Food) (*models.Food, error) {
+func (s *FoodService) Create(foodBody *models.Food, id string, file string) (*models.Food, error) {
+	if file != "" {
+		foodBody.FoodImageURL = file
+	}
+	if id == "" {
+		id = utils.GenerateUuid()
+	}
 
+	foodBody.FoodID = id
+	foodBody.CreatedAt = time.Now()
+	foodBody.UpdatedAt = time.Now()
+
+	if _, err := s.collection.InsertOne(context.TODO(), foodBody); err != nil {
+		return nil, err
+	}
+
+	return s.findFood(id)
 }
 
 func (s *FoodService) findFood(id string) (*models.Food, error) {

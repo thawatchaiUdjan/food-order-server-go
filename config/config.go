@@ -33,6 +33,12 @@ type TokenConfig struct {
 	TokenExpiredTime  string
 }
 
+type UploadFileConfig struct {
+	Format        string
+	FoodFolder    string
+	ProfileFolder string
+}
+
 type Config struct {
 	Port              string
 	JWTSecret         string
@@ -41,6 +47,7 @@ type Config struct {
 	Google            GoogleConfig
 	Facebook          FacebookConfig
 	Token             TokenConfig
+	UploadFile        UploadFileConfig
 	EncryptSaltRounds int
 }
 
@@ -71,6 +78,11 @@ func LoadConfig() Config {
 		Token: TokenConfig{
 			TokenExpiredError: "TokenExpiredError",
 			TokenExpiredTime:  "6h",
+		},
+		UploadFile: UploadFileConfig{
+			Format:        "png",
+			FoodFolder:    "foods",
+			ProfileFolder: "profiles",
 		},
 		EncryptSaltRounds: 10,
 	}

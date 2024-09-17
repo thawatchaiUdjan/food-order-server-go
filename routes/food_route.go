@@ -22,17 +22,18 @@ func FoodRoute(app *fiber.App, db *mongo.Database) {
 
 	route.Post("/", func(c fiber.Ctx) error {
 		foodBody := new(models.Food)
-		// req := c.Locals("user").(models.UserReq)
+		id := c.Locals("id").(string)
+		file := c.Locals("file").(string)
 
 		if err := c.Bind().Body(foodBody); err != nil {
 			return fiber.ErrBadRequest
 		}
 
-		food, err := foodService.Create("foodId", foodBody)
+		food, err := foodService.Create(foodBody, id, file)
 		if err != nil {
 			return fiber.ErrInternalServerError
 		}
 
-		return c.JSON(food)
-	})
+		return c.JSON(models.FoodDataRes{Food: *food, Message: "Food added successfully"})
+	}, middlewares.UploadFoodFile)
 }
