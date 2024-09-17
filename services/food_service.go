@@ -41,6 +41,10 @@ func (s *FoodService) FindAll() ([]models.Food, error) {
 	return results, nil
 }
 
+func (s *FoodService) Create(id string, foodBody *models.Food) (*models.Food, error) {
+
+}
+
 func (s *FoodService) findFood(id string) (*models.Food, error) {
 	pipeline := mongo.Pipeline{
 		bson.D{{Key: "$match", Value: bson.D{{Key: "food_id", Value: id}}}},
