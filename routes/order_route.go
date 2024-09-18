@@ -17,7 +17,7 @@ func OrderRoute(app *fiber.App, db *mongo.Database) {
 
 		foodOrder, err := orderService.FindOne(req.User.UserID)
 		if err != nil {
-			return fiber.NewError(fiber.StatusNotAcceptable, err.Error())
+			return fiber.ErrInternalServerError
 		}
 		return c.JSON(foodOrder)
 	})

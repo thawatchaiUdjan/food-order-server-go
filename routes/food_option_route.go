@@ -14,7 +14,7 @@ func FoodOptionRoute(app *fiber.App, db *mongo.Database) {
 	route.Get("/", func(c fiber.Ctx) error {
 		foodOptions, err := foodOptionService.FindAll()
 		if err != nil {
-			return fiber.NewError(fiber.StatusNotAcceptable, err.Error())
+			return fiber.ErrInternalServerError
 		}
 		return c.JSON(foodOptions)
 	})
