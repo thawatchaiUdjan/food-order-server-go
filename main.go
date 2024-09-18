@@ -29,5 +29,7 @@ func main() {
 	routes.FoodCategoryRoute(app, db)
 	routes.OrderRoute(app, db)
 
+	routes.DeliveryOptionRoute(app, db)
+
 	log.Fatal(app.Listen(":" + config.Port))
 }
