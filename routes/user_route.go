@@ -12,6 +12,10 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 	userService := services.CreateUserService(db)
 	route := app.Group("/user")
 
+	route.Get("/verify-token", func(c fiber.Ctx) error {
+		return c.SendString("verify complete")
+	}, middlewares.AuthToken)
+
 	route.Post("/login", func(c fiber.Ctx) error {
 		userBody := new(models.UserLoginReq)
 
