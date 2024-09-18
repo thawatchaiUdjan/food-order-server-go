@@ -12,8 +12,8 @@ type UserRegisterReq struct {
 }
 
 type FoodCartOption struct {
-	OptionString string `json:"option_string" bson:"option_string"`
-	OptionNote   string `json:"option_note" bson:"option_note"`
+	OptionString []string `json:"option_string" bson:"option_string"`
+	OptionNote   string   `json:"option_note" bson:"option_note"`
 }
 
 type FoodCart struct {

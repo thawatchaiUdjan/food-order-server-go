@@ -12,7 +12,7 @@ type OrderFood struct {
 	FoodID           string             `bson:"food_id" json:"food_id"`
 	FoodAmount       int                `bson:"food_amount" json:"food_amount"`
 	FoodTotalPrice   float64            `bson:"food_total_price" json:"food_total_price"`
-	FoodOptionString string             `bson:"food_option_string" json:"food_option_string"`
+	FoodOptionString []string           `bson:"food_option_string" json:"food_option_string"`
 	FoodOptionNote   string             `bson:"food_option_note,omitempty" json:"food_option_note,omitempty"`
 	CreatedAt        time.Time          `bson:"created_at" json:"created_at"`
 	UpdatedAt        time.Time          `bson:"updated_at" json:"updated_at"`
