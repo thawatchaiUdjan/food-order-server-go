@@ -88,6 +88,11 @@ func (s *OrderService) Remove(id string) error {
 	if _, err := s.collection.DeleteOne(context.TODO(), bson.M{"order_id": id}); err != nil {
 		return err
 	}
+
+	if err := s.removeOrderFood(id); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -181,6 +186,13 @@ func (s *OrderService) createOrderFood(orderId string, foodId string, food *mode
 		CreatedAt:        time.Now(),
 	}
 	if _, err := s.foodCollection.InsertOne(context.TODO(), orderFood); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *OrderService) removeOrderFood(id string) error {
+	if _, err := s.foodCollection.DeleteMany(context.TODO(), bson.M{"order_id": id}); err != nil {
 		return err
 	}
 	return nil
