@@ -16,6 +16,17 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 		return c.SendString("verify complete")
 	}, middlewares.AuthToken)
 
+	route.Get("/", func(c fiber.Ctx) error {
+		req := c.Locals("user").(models.UserReq)
+
+		user, err := userService.FindOne(req.User.UserID, req.Token)
+		if err != nil {
+			return fiber.ErrInternalServerError
+		}
+
+		return c.JSON(user)
+	}, middlewares.AuthToken)
+
 	route.Post("/login", func(c fiber.Ctx) error {
 		userBody := new(models.UserLoginReq)
 

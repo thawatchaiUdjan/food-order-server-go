@@ -21,6 +21,15 @@ func CreateUserService(db *mongo.Database) *UserService {
 	}
 }
 
+func (s *UserService) FindOne(id string, token string) (*models.UserDataRes, error) {
+	user := new(models.User)
+	if err := s.collection.FindOne(context.TODO(), bson.M{"user_id": id}).Decode(&user); err != nil {
+		return nil, err
+	}
+
+	return &models.UserDataRes{User: *user, Token: token}, nil
+}
+
 func (s *UserService) Login(userBody *models.UserLoginReq) (*models.UserDataRes, error) {
 	user, err := s.findUser(userBody.Username)
 	if err != nil {
