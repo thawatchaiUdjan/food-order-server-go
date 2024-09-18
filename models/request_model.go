@@ -17,9 +17,9 @@ type FoodCartOption struct {
 }
 
 type FoodCart struct {
-	Food   Food           `json:"food" bson:"food" validate:"required"`
-	Amount int            `json:"amount" bson:"amount" validate:"required"`
-	Total  float64        `json:"total" bson:"total" validate:"required"`
+	Food   Food           `json:"food" bson:"food"`
+	Amount int            `json:"amount" bson:"amount"`
+	Total  float64        `json:"total" bson:"total"`
 	Option FoodCartOption `json:"option" bson:"option"`
 }
 
