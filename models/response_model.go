@@ -18,3 +18,14 @@ type FoodDataRes struct {
 	Food    Food   `json:"food"`
 	Message string `json:"message"`
 }
+
+type FoodOrderRes struct {
+	Order Order       `json:"order"`
+	Foods []OrderFood `json:"foods"`
+}
+
+type OrderDataRes struct {
+	FoodOrder FoodOrderRes `json:"foodOrder"`
+	User      UserDataRes  `json:"user"`
+	Message   string       `json:"message"`
+}

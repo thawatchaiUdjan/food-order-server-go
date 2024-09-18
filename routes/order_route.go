@@ -15,10 +15,34 @@ func OrderRoute(app *fiber.App, db *mongo.Database) {
 	route.Get("/", func(c fiber.Ctx) error {
 		req := c.Locals("user").(models.UserReq)
 
-		order, err := orderService.FindOne(req.User.UserID)
+		foodOrder, err := orderService.FindOne(req.User.UserID)
+		if err != nil {
+			return fiber.NewError(fiber.StatusNotAcceptable, err.Error())
+		}
+		return c.JSON(foodOrder)
+	})
+
+	route.Post("/", func(c fiber.Ctx) error {
+		req := c.Locals("user").(models.UserReq)
+
+		orderReq := new(models.OrderReq)
+		if err := c.Bind().Body(orderReq); err != nil {
+			return fiber.ErrBadRequest
+		}
+
+		foodOrder, err := orderService.Create(&req.User, orderReq)
 		if err != nil {
 			return fiber.ErrInternalServerError
 		}
-		return c.JSON(order)
+		return c.JSON(foodOrder)
+	})
+
+	route.Delete("/:id", func(c fiber.Ctx) error {
+		id := c.Params("id")
+
+		if err := orderService.Remove(id); err != nil {
+			return fiber.ErrInternalServerError
+		}
+		return c.JSON(models.MessageRes{Message: "Order successfully canceled"})
 	})
 }
