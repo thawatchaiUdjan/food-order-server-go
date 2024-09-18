@@ -10,8 +10,8 @@ type UserDataRes struct {
 }
 
 type UserUpdateRes struct {
-	User    User   `json:"user"`
-	Message string `json:"message"`
+	User    UserDataRes `json:"user"`
+	Message string      `json:"message"`
 }
 
 type FoodDataRes struct {

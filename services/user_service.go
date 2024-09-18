@@ -69,12 +69,12 @@ func (s *UserService) Register(userBody *models.UserRegisterReq) (*models.UserDa
 	return &models.UserDataRes{User: *result, Token: token}, nil
 }
 
-func (s *UserService) Update(id string, userBody *models.User) (*models.UserDataRes, error) {
+func (s *UserService) Update(id string, userBody *models.User) (*models.UserUpdateRes, error) {
 	result, err := s.UpdateUser(id, userBody)
 	if err != nil {
 		return nil, err
 	}
-	return result, nil
+	return &models.UserUpdateRes{User: *result, Message: "User data successfully updated"}, nil
 }
 
 func (s *UserService) Remove(id string) (*models.MessageRes, error) {
