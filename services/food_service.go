@@ -68,6 +68,27 @@ func (s *FoodService) Create(foodBody *models.FoodReq, id string, file string) (
 	return s.findFood(id)
 }
 
+func (s *FoodService) Update(id string, foodBody *models.FoodReq, file string) (*models.Food, error) {
+	food := &models.FoodCreate{
+		FoodName:          foodBody.FoodName,
+		FoodPrice:         foodBody.FoodPrice,
+		FoodPriceDiscount: foodBody.FoodPriceDiscount,
+		FoodDescription:   foodBody.FoodDescription,
+		CategoryID:        foodBody.CategoryID,
+		FoodImageURL:      file,
+		FoodOptions:       utils.ConvertToObjectIDs(foodBody.FoodOptions),
+		UpdatedAt:         time.Now(),
+	}
+
+	update := utils.CreateBSON(food)
+
+	if _, err := s.collection.UpdateOne(context.TODO(), bson.M{"food_id": id}, update); err != nil {
+		return nil, err
+	}
+
+	return s.findFood(id)
+}
+
 func (s *FoodService) Remove(id string) error {
 	if _, err := s.collection.DeleteOne(context.TODO(), bson.M{"food_id": id}); err != nil {
 		return err

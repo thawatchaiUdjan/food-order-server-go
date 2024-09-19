@@ -37,6 +37,23 @@ func FoodRoute(app *fiber.App, db *mongo.Database) {
 		return c.JSON(models.FoodDataRes{Food: *food, Message: "Food added successfully"})
 	}, middlewares.UploadFoodFile)
 
+	route.Put("/:id", func(c fiber.Ctx) error {
+		foodBody := new(models.FoodReq)
+		id := c.Params("id")
+		file := c.Locals("file").(string)
+
+		if err := c.Bind().Body(foodBody); err != nil {
+			return fiber.ErrBadRequest
+		}
+
+		food, err := foodService.Update(id, foodBody, file)
+		if err != nil {
+			return fiber.ErrInternalServerError
+		}
+
+		return c.JSON(models.FoodDataRes{Food: *food, Message: "Food item successfully updated"})
+	}, middlewares.UploadFoodFile)
+
 	route.Delete("/:id", func(c fiber.Ctx) error {
 		id := c.Params("id")
 
