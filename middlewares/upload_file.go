@@ -49,7 +49,10 @@ func UploadFoodFile(c fiber.Ctx) error {
 	config := config.LoadConfig()
 	name := "food_image_url"
 	folder := config.UploadFile.FoodFolder
-	id := utils.GenerateUuid()
+	id := c.Params("id")
+	if id == "" {
+		id = utils.GenerateUuid()
+	}
 
 	if err := uploadFile(c, name, id, folder); err != nil {
 		return err
