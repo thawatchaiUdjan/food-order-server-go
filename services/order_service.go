@@ -129,6 +129,18 @@ func (s *OrderService) Remove(id string) error {
 	return nil
 }
 
+func (s *OrderService) FindOrderFood(id string) error {
+	orderFood := new(models.OrderFood)
+	if err := s.foodCollection.FindOne(context.TODO(), bson.M{"food_id": id}).Decode(&orderFood); err != nil {
+		if err == mongo.ErrNoDocuments {
+			return fiber.ErrNotFound
+		} else {
+			return err
+		}
+	}
+	return nil
+}
+
 func (s *OrderService) findOrderByUserId(id string) (*models.Order, error) {
 	pipeline := mongo.Pipeline{
 		bson.D{{Key: "$match", Value: bson.D{{Key: "user_id", Value: id}}}},

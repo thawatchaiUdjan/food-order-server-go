@@ -6,17 +6,20 @@ import (
 
 	"github.com/food-order-server/models"
 	"github.com/food-order-server/utils"
+	"github.com/gofiber/fiber/v3"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type FoodService struct {
-	collection *mongo.Collection
+	collection   *mongo.Collection
+	orderService *OrderService
 }
 
 func CreateFoodService(db *mongo.Database) *FoodService {
 	return &FoodService{
-		collection: db.Collection("foods"),
+		collection:   db.Collection("foods"),
+		orderService: CreateOrderService(db),
 	}
 }
 
@@ -69,6 +72,13 @@ func (s *FoodService) Create(foodBody *models.FoodReq, id string, file string) (
 }
 
 func (s *FoodService) Update(id string, foodBody *models.FoodReq, file string) (*models.Food, error) {
+	err := s.orderService.FindOrderFood(id)
+	if err == nil {
+		return nil, fiber.NewError(fiber.StatusNotAcceptable, "Food is currently ordered, cannot update")
+	} else if err != fiber.ErrNotFound {
+		return nil, err
+	}
+
 	food := &models.FoodCreate{
 		FoodName:          foodBody.FoodName,
 		FoodPrice:         foodBody.FoodPrice,
@@ -90,9 +100,17 @@ func (s *FoodService) Update(id string, foodBody *models.FoodReq, file string) (
 }
 
 func (s *FoodService) Remove(id string) error {
+	err := s.orderService.FindOrderFood(id)
+	if err == nil {
+		return fiber.NewError(fiber.StatusNotAcceptable, "Food is currently ordered, cannot update")
+	} else if err != fiber.ErrNotFound {
+		return err
+	}
+
 	if _, err := s.collection.DeleteOne(context.TODO(), bson.M{"food_id": id}); err != nil {
 		return err
 	}
+
 	return nil
 }
 
