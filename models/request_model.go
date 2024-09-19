@@ -27,3 +27,13 @@ type OrderReq struct {
 	Foods []FoodCart  `json:"foods" bson:"foods" validate:"required"`
 	Order OrderCreate `json:"order" bson:"order" validate:"required"`
 }
+
+type FoodReq struct {
+	FoodName          string   `bson:"food_name" json:"food_name" form:"food_name" validate:"required"`
+	FoodPrice         float64  `bson:"food_price" json:"food_price" form:"food_price" validate:"required"`
+	FoodPriceDiscount float64  `bson:"food_price_discount" json:"food_price_discount" form:"food_price_discount" validate:"required"`
+	FoodDescription   string   `bson:"food_description" json:"food_description" form:"food_description" validate:"required"`
+	FoodImageURL      string   `bson:"food_image_url" json:"food_image_url"`
+	CategoryID        string   `bson:"category_id" json:"category_id" form:"category_id" validate:"required"`
+	FoodOptions       []string `bson:"food_options" json:"food_options" form:"food_options[]" validate:"required"`
+}

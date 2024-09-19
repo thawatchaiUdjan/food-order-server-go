@@ -17,6 +17,7 @@ func uploadFile(c fiber.Ctx, name string, id string, folder string) error {
 	file, err := c.FormFile(name)
 	if err != nil {
 		c.Locals("file", "")
+		c.Locals("id", "")
 		return c.Next()
 	}
 

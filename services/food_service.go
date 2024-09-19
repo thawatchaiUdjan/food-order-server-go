@@ -43,19 +43,25 @@ func (s *FoodService) FindAll() ([]models.Food, error) {
 	return results, nil
 }
 
-func (s *FoodService) Create(foodBody *models.Food, id string, file string) (*models.Food, error) {
-	if file != "" {
-		foodBody.FoodImageURL = file
-	}
+func (s *FoodService) Create(foodBody *models.FoodReq, id string, file string) (*models.Food, error) {
 	if id == "" {
 		id = utils.GenerateUuid()
 	}
 
-	foodBody.FoodID = id
-	foodBody.CreatedAt = time.Now()
-	foodBody.UpdatedAt = time.Now()
+	food := &models.FoodCreate{
+		FoodID:            id,
+		FoodName:          foodBody.FoodName,
+		FoodPrice:         foodBody.FoodPrice,
+		FoodPriceDiscount: foodBody.FoodPriceDiscount,
+		FoodDescription:   foodBody.FoodDescription,
+		FoodImageURL:      file,
+		CategoryID:        foodBody.CategoryID,
+		FoodOptions:       utils.ConvertToObjectIDs(foodBody.FoodOptions),
+		CreatedAt:         time.Now(),
+		UpdatedAt:         time.Now(),
+	}
 
-	if _, err := s.collection.InsertOne(context.TODO(), foodBody); err != nil {
+	if _, err := s.collection.InsertOne(context.TODO(), food); err != nil {
 		return nil, err
 	}
 

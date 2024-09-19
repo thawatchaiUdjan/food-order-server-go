@@ -21,7 +21,7 @@ func FoodRoute(app *fiber.App, db *mongo.Database) {
 	})
 
 	route.Post("/", func(c fiber.Ctx) error {
-		foodBody := new(models.Food)
+		foodBody := new(models.FoodReq)
 		id := c.Locals("id").(string)
 		file := c.Locals("file").(string)
 
