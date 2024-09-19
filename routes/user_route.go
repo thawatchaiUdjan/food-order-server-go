@@ -64,18 +64,19 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 	route.Put("/", func(c fiber.Ctx) error {
 		userBody := new(models.User)
 		req := c.Locals("user").(models.UserReq)
+		file := c.Locals("file").(string)
 
 		if err := c.Bind().Body(userBody); err != nil {
 			return fiber.ErrBadRequest
 		}
 
-		result, err := userService.Update(req.User.UserID, userBody)
+		result, err := userService.Update(req.User.UserID, userBody, file)
 		if err != nil {
 			return fiber.ErrInternalServerError
 		}
 
 		return c.JSON(result)
-	}, middlewares.AuthToken)
+	}, middlewares.AuthToken, middlewares.UploadProfileFile)
 
 	route.Delete("/", func(c fiber.Ctx) error {
 		req := c.Locals("user").(models.UserReq)
