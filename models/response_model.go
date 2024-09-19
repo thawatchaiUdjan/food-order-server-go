@@ -29,3 +29,8 @@ type OrderDataRes struct {
 	User      UserDataRes  `json:"user"`
 	Message   string       `json:"message"`
 }
+
+type OrderUpdateRes struct {
+	Order   OrderCreate `json:"order"`
+	Message string      `json:"message"`
+}

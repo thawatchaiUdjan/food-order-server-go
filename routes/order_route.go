@@ -37,6 +37,19 @@ func OrderRoute(app *fiber.App, db *mongo.Database) {
 		return c.JSON(foodOrder)
 	})
 
+	route.Put(":id/:status", func(c fiber.Ctx) error {
+		id := c.Params("id")
+		status := c.Params("status")
+
+		result, err := orderService.UpdateStatus(id, status)
+		if err == fiber.ErrNotFound {
+			return fiber.NewError(fiber.StatusNotFound, "Order to update not found")
+		} else if err != nil {
+			return fiber.ErrInternalServerError
+		}
+		return c.JSON(result)
+	})
+
 	route.Delete("/:id", func(c fiber.Ctx) error {
 		id := c.Params("id")
 

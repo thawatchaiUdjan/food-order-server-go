@@ -9,6 +9,7 @@ import (
 	"github.com/food-order-server/utils"
 	"github.com/gofiber/fiber/v3"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -97,6 +98,23 @@ func (s *OrderService) FindOne(id string) (*models.FoodOrderRes, error) {
 	}
 
 	return foodOrder, nil
+}
+
+func (s *OrderService) UpdateStatus(id string, status string) (*models.OrderUpdateRes, error) {
+	order := new(models.OrderCreate)
+	statusId, _ := primitive.ObjectIDFromHex(status)
+	update := utils.CreateBSON(&models.OrderCreate{OrderStatus: statusId})
+	option := utils.GetUpdateOption()
+
+	if err := s.collection.FindOneAndUpdate(context.TODO(), bson.M{"order_id": id}, update, option).Decode(&order); err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, fiber.ErrNotFound
+		} else {
+			return nil, err
+		}
+	}
+
+	return &models.OrderUpdateRes{Order: *order, Message: "Order status updated successfully"}, nil
 }
 
 func (s *OrderService) Remove(id string) error {
