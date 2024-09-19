@@ -68,6 +68,13 @@ func (s *FoodService) Create(foodBody *models.FoodReq, id string, file string) (
 	return s.findFood(id)
 }
 
+func (s *FoodService) Remove(id string) error {
+	if _, err := s.collection.DeleteOne(context.TODO(), bson.M{"food_id": id}); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *FoodService) findFood(id string) (*models.Food, error) {
 	pipeline := mongo.Pipeline{
 		bson.D{{Key: "$match", Value: bson.D{{Key: "food_id", Value: id}}}},

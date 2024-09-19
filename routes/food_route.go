@@ -36,4 +36,13 @@ func FoodRoute(app *fiber.App, db *mongo.Database) {
 
 		return c.JSON(models.FoodDataRes{Food: *food, Message: "Food added successfully"})
 	}, middlewares.UploadFoodFile)
+
+	route.Delete("/:id", func(c fiber.Ctx) error {
+		id := c.Params("id")
+
+		if err := foodService.Remove(id); err != nil {
+			return fiber.ErrInternalServerError
+		}
+		return c.JSON(models.MessageRes{Message: "Food item successfully deleted"})
+	})
 }
