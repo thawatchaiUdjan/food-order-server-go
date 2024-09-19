@@ -45,4 +45,13 @@ func OrderRoute(app *fiber.App, db *mongo.Database) {
 		}
 		return c.JSON(models.MessageRes{Message: "Order successfully canceled"})
 	})
+
+	route.Get("/all-order", func(c fiber.Ctx) error {
+		orders, err := orderService.FindAll()
+		if err != nil {
+			return fiber.ErrInternalServerError
+		}
+
+		return c.JSON(orders)
+	})
 }

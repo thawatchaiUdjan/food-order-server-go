@@ -71,8 +71,23 @@ func (s *OrderService) Create(user *models.User, orderReq *models.OrderReq) (*mo
 	}
 }
 
-func (s *OrderService) FindAll() ([]models.Order, error) {
-	return nil, fiber.ErrInternalServerError
+func (s *OrderService) FindAll() ([]models.OrderAll, error) {
+	orders, err := s.findOrders()
+	if err == mongo.ErrNoDocuments {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	for i, order := range orders {
+		foods, err := s.findFoodByOrderId(order.OrderID)
+		if err != nil {
+			return nil, err
+		}
+		orders[i].Foods = foods
+	}
+
+	return orders, nil
 }
 
 func (s *OrderService) FindOne(id string) (*models.FoodOrderRes, error) {
@@ -196,4 +211,45 @@ func (s *OrderService) removeOrderFood(id string) error {
 		return err
 	}
 	return nil
+}
+
+func (s *OrderService) findOrders() ([]models.OrderAll, error) {
+	pipeline := mongo.Pipeline{
+		bson.D{{Key: "$lookup", Value: bson.D{
+			{Key: "from", Value: "users"},
+			{Key: "localField", Value: "user_id"},
+			{Key: "foreignField", Value: "user_id"},
+			{Key: "as", Value: "user"},
+		}}},
+		bson.D{{Key: "$lookup", Value: bson.D{
+			{Key: "from", Value: "order_statuses"},
+			{Key: "localField", Value: "order_status"},
+			{Key: "foreignField", Value: "_id"},
+			{Key: "as", Value: "status"},
+		}}},
+		bson.D{{Key: "$lookup", Value: bson.D{
+			{Key: "from", Value: "delivery_options"},
+			{Key: "localField", Value: "order_delivery_option"},
+			{Key: "foreignField", Value: "_id"},
+			{Key: "as", Value: "delivery_option"},
+		}}},
+		bson.D{{Key: "$unwind", Value: "$user"}},
+		bson.D{{Key: "$unwind", Value: "$status"}},
+		bson.D{{Key: "$unwind", Value: "$delivery_option"}},
+		bson.D{{Key: "$replaceRoot", Value: bson.D{{Key: "newRoot", Value: bson.D{{Key: "$mergeObjects", Value: bson.A{
+			"$$ROOT", bson.D{{Key: "$mergeObjects", Value: bson.A{"$user", "$status"}}},
+		}}}}}}},
+	}
+
+	cursor, err := s.collection.Aggregate(context.TODO(), pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	var results []models.OrderAll
+	if err := cursor.All(context.TODO(), &results); err != nil {
+		return nil, err
+	}
+
+	return results, nil
 }

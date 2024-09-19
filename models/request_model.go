@@ -25,5 +25,5 @@ type FoodCart struct {
 
 type OrderReq struct {
 	Foods []FoodCart  `json:"foods" bson:"foods" validate:"required"`
-	Order CreateOrder `json:"order" bson:"order" validate:"required"`
+	Order OrderCreate `json:"order" bson:"order" validate:"required"`
 }
