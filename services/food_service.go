@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/food-order-server/config"
 	"github.com/food-order-server/models"
 	"github.com/food-order-server/utils"
 	"github.com/gofiber/fiber/v3"
@@ -102,12 +103,18 @@ func (s *FoodService) Update(id string, foodBody *models.FoodReq, file string) (
 func (s *FoodService) Remove(id string) error {
 	err := s.orderService.FindOrderFood(id)
 	if err == nil {
-		return fiber.NewError(fiber.StatusNotAcceptable, "Food is currently ordered, cannot update")
+		return fiber.NewError(fiber.StatusNotAcceptable, "Food is currently ordered, cannot delete")
 	} else if err != fiber.ErrNotFound {
 		return err
 	}
 
-	if _, err := s.collection.DeleteOne(context.TODO(), bson.M{"food_id": id}); err != nil {
+	config := config.LoadConfig()
+	food := new(models.FoodCreate)
+	if err := s.collection.FindOneAndDelete(context.TODO(), bson.M{"food_id": id}).Decode(&food); err != nil {
+		return err
+	}
+
+	if err := utils.DeleteFile(food.FoodImageURL, config.UploadFile.FoodFolder); err != nil {
 		return err
 	}
 

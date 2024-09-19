@@ -1,11 +1,14 @@
 package utils
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/base64"
 	"reflect"
+	"strings"
 	"time"
 
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/food-order-server/config"
 	"github.com/food-order-server/models"
 	"github.com/gofiber/fiber/v3"
@@ -100,4 +103,26 @@ func ConvertToObjectIDs(array []string) []primitive.ObjectID {
 		objectIDs = append(objectIDs, objectID)
 	}
 	return objectIDs
+}
+
+func DeleteFile(imageURL string, imageFolder string) error {
+	if imageURL == "" {
+		return nil
+	}
+
+	cld := config.LoadCloudinary()
+	parts := strings.Split(imageURL, "/")
+	publicId := strings.Split(parts[len(parts)-1], ".")[0]
+
+	if imageFolder != "" {
+		publicId = imageFolder + "/" + publicId
+	}
+
+	if _, err := cld.Upload.Destroy(context.TODO(), uploader.DestroyParams{
+		PublicID: publicId,
+	}); err != nil {
+		return err
+	}
+
+	return nil
 }

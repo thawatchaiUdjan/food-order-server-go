@@ -47,7 +47,9 @@ func FoodRoute(app *fiber.App, db *mongo.Database) {
 		}
 
 		food, err := foodService.Update(id, foodBody, file)
-		if err != nil {
+		if err == fiber.ErrNotAcceptable {
+			return err
+		} else if err != nil {
 			return fiber.ErrInternalServerError
 		}
 
@@ -58,7 +60,11 @@ func FoodRoute(app *fiber.App, db *mongo.Database) {
 		id := c.Params("id")
 
 		if err := foodService.Remove(id); err != nil {
-			return fiber.ErrInternalServerError
+			if err == fiber.ErrNotAcceptable {
+				return err
+			} else {
+				return fiber.ErrInternalServerError
+			}
 		}
 		return c.JSON(models.MessageRes{Message: "Food item successfully deleted"})
 	})
