@@ -13,7 +13,7 @@ type Food struct {
 	FoodPrice         float64            `bson:"food_price" json:"food_price"`
 	FoodPriceDiscount float64            `bson:"food_price_discount" json:"food_price_discount"`
 	FoodDescription   string             `bson:"food_description" json:"food_description"`
-	FoodImageURL      string             `bson:"food_image_url" json:"food_image_url"`
+	FoodImageURL      string             `bson:"food_image_url,omitempty" json:"food_image_url,omitempty"`
 	CreatedAt         time.Time          `bson:"created_at" json:"created_at"`
 	UpdatedAt         time.Time          `bson:"updated_at" json:"updated_at"`
 	CategoryID        string             `bson:"category_id,omitempty" json:"category_id,omitempty"`
@@ -26,7 +26,7 @@ type FoodCreate struct {
 	FoodPrice         float64              `bson:"food_price" json:"food_price"`
 	FoodPriceDiscount float64              `bson:"food_price_discount" json:"food_price_discount"`
 	FoodDescription   string               `bson:"food_description" json:"food_description"`
-	FoodImageURL      string               `bson:"food_image_url" json:"food_image_url"`
+	FoodImageURL      string               `bson:"food_image_url,omitempty" json:"food_image_url,omitempty"`
 	CreatedAt         time.Time            `bson:"created_at" json:"created_at"`
 	UpdatedAt         time.Time            `bson:"updated_at" json:"updated_at"`
 	CategoryID        string               `bson:"category_id" json:"category_id"`
