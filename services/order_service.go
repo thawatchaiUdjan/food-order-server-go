@@ -101,9 +101,13 @@ func (s *OrderService) FindOne(id string) (*models.FoodOrderRes, error) {
 }
 
 func (s *OrderService) UpdateStatus(id string, status string) (*models.OrderUpdateRes, error) {
-	order := new(models.OrderCreate)
 	statusId, _ := primitive.ObjectIDFromHex(status)
-	update := utils.CreateBSON(&models.OrderCreate{OrderStatus: statusId})
+	order := &models.OrderCreate{
+		OrderStatus: statusId,
+		UpdatedAt:   time.Now(),
+	}
+
+	update := utils.CreateBSON(order)
 	option := utils.GetUpdateOption()
 
 	if err := s.collection.FindOneAndUpdate(context.TODO(), bson.M{"order_id": id}, update, option).Decode(&order); err != nil {
