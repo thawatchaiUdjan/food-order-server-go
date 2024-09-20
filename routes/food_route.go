@@ -39,6 +39,7 @@ func FoodRoute(app *fiber.App, db *mongo.Database) {
 
 	route.Put("/:id", func(c fiber.Ctx) error {
 		foodBody := new(models.FoodReq)
+		user := c.Locals("user").(models.UserReq)
 		id := c.Params("id")
 		file := c.Locals("file").(string)
 
@@ -46,9 +47,11 @@ func FoodRoute(app *fiber.App, db *mongo.Database) {
 			return fiber.ErrBadRequest
 		}
 
-		food, err := foodService.Update(id, foodBody, file)
+		food, err := foodService.Update(user, id, foodBody, file)
 		if err == fiber.ErrNotAcceptable {
 			return fiber.NewError(fiber.StatusNotAcceptable, "Food is currently ordered, cannot update")
+		} else if err == fiber.ErrUnauthorized {
+			return fiber.NewError(fiber.StatusNotAcceptable, "No permission for this food. Please try another food")
 		} else if err != nil {
 			return fiber.ErrInternalServerError
 		}
@@ -57,11 +60,14 @@ func FoodRoute(app *fiber.App, db *mongo.Database) {
 	}, middlewares.UploadFoodFile)
 
 	route.Delete("/:id", func(c fiber.Ctx) error {
+		user := c.Locals("user").(models.UserReq)
 		id := c.Params("id")
 
-		if err := foodService.Remove(id); err != nil {
+		if err := foodService.Remove(user, id); err != nil {
 			if err == fiber.ErrNotAcceptable {
 				return fiber.NewError(fiber.StatusNotAcceptable, "Food is currently ordered, cannot delete")
+			} else if err == fiber.ErrUnauthorized {
+				return fiber.NewError(fiber.StatusNotAcceptable, "No permission for this food. Please try another food")
 			} else {
 				return fiber.ErrInternalServerError
 			}

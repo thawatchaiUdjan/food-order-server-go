@@ -72,11 +72,15 @@ func (s *FoodService) Create(foodBody *models.FoodReq, id string, file string) (
 	return s.findFood(id)
 }
 
-func (s *FoodService) Update(id string, foodBody *models.FoodReq, file string) (*models.Food, error) {
+func (s *FoodService) Update(user models.UserReq, id string, foodBody *models.FoodReq, file string) (*models.Food, error) {
 	err := s.orderService.FindOrderFood(id)
 	if err == nil {
 		return nil, fiber.ErrNotAcceptable
 	} else if err != fiber.ErrNotFound {
+		return nil, err
+	}
+
+	if err := s.checkFoodPermission(user.User.Role, id); err != nil {
 		return nil, err
 	}
 
@@ -100,11 +104,15 @@ func (s *FoodService) Update(id string, foodBody *models.FoodReq, file string) (
 	return s.findFood(id)
 }
 
-func (s *FoodService) Remove(id string) error {
+func (s *FoodService) Remove(user models.UserReq, id string) error {
 	err := s.orderService.FindOrderFood(id)
 	if err == nil {
 		return fiber.ErrNotAcceptable
 	} else if err != fiber.ErrNotFound {
+		return err
+	}
+
+	if err := s.checkFoodPermission(user.User.Role, id); err != nil {
 		return err
 	}
 
@@ -151,4 +159,13 @@ func (s *FoodService) findFood(id string) (*models.Food, error) {
 	}
 
 	return &results[0], nil
+}
+
+func (s *FoodService) checkFoodPermission(role string, id string) error {
+	if food, err := s.findFood(id); err != nil {
+		return err
+	} else if food.Permission == "owner" && role != "owner" {
+		return fiber.ErrUnauthorized
+	}
+	return nil
 }

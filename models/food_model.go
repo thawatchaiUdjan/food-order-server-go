@@ -18,6 +18,7 @@ type Food struct {
 	UpdatedAt         time.Time          `bson:"updated_at" json:"updated_at"`
 	CategoryID        string             `bson:"category_id,omitempty" json:"category_id,omitempty"`
 	FoodOptions       []FoodOption       `bson:"food_options,omitempty" json:"food_options,omitempty"`
+	Permission        string             `bson:"permission,omitempty" json:"permission,omitempty"`
 }
 
 type FoodCreate struct {
