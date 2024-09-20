@@ -81,6 +81,7 @@ func CreateBSON(model interface{}) bson.M {
 	for i := 0; i < v.NumField(); i++ {
 		field := v.Field(i)
 		tag := t.Field(i).Tag.Get("bson")
+		tag = strings.Split(tag, ",")[0]
 
 		if tag == "" || reflect.DeepEqual(field.Interface(), reflect.Zero(field.Type()).Interface()) {
 			continue

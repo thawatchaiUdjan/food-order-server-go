@@ -24,8 +24,8 @@ type User struct {
 	Name            string             `bson:"name" json:"name"`
 	Role            string             `bson:"role" json:"role"`
 	Balance         float64            `bson:"balance" json:"balance"`
-	Location        Location           `bson:"location" json:"location"`
-	ProfileImageURL string             `bson:"profile_image_url" json:"profile_image_url"`
+	Location        *Location          `bson:"location,omitempty" json:"location,omitempty"`
+	ProfileImageURL string             `bson:"profile_image_url,omitempty" json:"profile_image_url,omitempty"`
 	CreatedAt       time.Time          `bson:"created_at" json:"created_at"`
 	UpdatedAt       time.Time          `bson:"updated_at" json:"updated_at"`
 }
