@@ -75,7 +75,7 @@ func (s *FoodService) Create(foodBody *models.FoodReq, id string, file string) (
 func (s *FoodService) Update(id string, foodBody *models.FoodReq, file string) (*models.Food, error) {
 	err := s.orderService.FindOrderFood(id)
 	if err == nil {
-		return nil, fiber.NewError(fiber.StatusNotAcceptable, "Food is currently ordered, cannot update")
+		return nil, fiber.ErrNotAcceptable
 	} else if err != fiber.ErrNotFound {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (s *FoodService) Update(id string, foodBody *models.FoodReq, file string) (
 func (s *FoodService) Remove(id string) error {
 	err := s.orderService.FindOrderFood(id)
 	if err == nil {
-		return fiber.NewError(fiber.StatusNotAcceptable, "Food is currently ordered, cannot delete")
+		return fiber.ErrNotAcceptable
 	} else if err != fiber.ErrNotFound {
 		return err
 	}

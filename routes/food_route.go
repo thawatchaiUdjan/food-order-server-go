@@ -48,7 +48,7 @@ func FoodRoute(app *fiber.App, db *mongo.Database) {
 
 		food, err := foodService.Update(id, foodBody, file)
 		if err == fiber.ErrNotAcceptable {
-			return err
+			return fiber.NewError(fiber.StatusNotAcceptable, "Food is currently ordered, cannot update")
 		} else if err != nil {
 			return fiber.ErrInternalServerError
 		}
@@ -61,7 +61,7 @@ func FoodRoute(app *fiber.App, db *mongo.Database) {
 
 		if err := foodService.Remove(id); err != nil {
 			if err == fiber.ErrNotAcceptable {
-				return err
+				return fiber.NewError(fiber.StatusNotAcceptable, "Food is currently ordered, cannot delete")
 			} else {
 				return fiber.ErrInternalServerError
 			}
