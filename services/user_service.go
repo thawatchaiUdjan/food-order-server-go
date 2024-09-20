@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/food-order-server/config"
 	"github.com/food-order-server/models"
 	"github.com/food-order-server/utils"
 	"github.com/gofiber/fiber/v3"
@@ -12,12 +13,14 @@ import (
 )
 
 type UserService struct {
-	collection *mongo.Collection
+	collection      *mongo.Collection
+	orderCollection *mongo.Collection
 }
 
 func CreateUserService(db *mongo.Database) *UserService {
 	return &UserService{
-		collection: db.Collection("users"),
+		collection:      db.Collection("users"),
+		orderCollection: db.Collection("orders"),
 	}
 }
 
@@ -82,10 +85,23 @@ func (s *UserService) Update(id string, userBody *models.User, file string) (*mo
 }
 
 func (s *UserService) Remove(id string) (*models.MessageRes, error) {
+	order := new(models.OrderCreate)
+	if err := s.orderCollection.FindOne(context.TODO(), bson.M{"user_id": id}).Decode(&order); err == nil {
+		return nil, fiber.ErrNotAcceptable
+	} else if err != mongo.ErrNoDocuments {
+		return nil, err
+	}
+
+	config := config.LoadConfig()
 	user := new(models.User)
 	if err := s.collection.FindOneAndDelete(context.TODO(), bson.M{"user_id": id}).Decode(&user); err != nil {
 		return nil, err
 	}
+
+	if err := utils.DeleteFile(user.ProfileImageURL, config.UploadFile.ProfileFolder); err != nil {
+		return nil, err
+	}
+
 	return &models.MessageRes{Message: "Delete account successfully"}, nil
 }
 

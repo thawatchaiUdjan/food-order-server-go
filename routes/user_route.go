@@ -82,7 +82,9 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 		req := c.Locals("user").(models.UserReq)
 
 		result, err := userService.Remove(req.User.UserID)
-		if err != nil {
+		if err == fiber.ErrNotAcceptable {
+			return fiber.NewError(fiber.StatusNotAcceptable, "account have an order, cant be delete")
+		} else if err != nil {
 			return fiber.ErrInternalServerError
 		}
 
