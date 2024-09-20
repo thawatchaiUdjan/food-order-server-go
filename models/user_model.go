@@ -20,7 +20,7 @@ type User struct {
 	ID              primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	UserID          string             `bson:"user_id" json:"user_id"`
 	Username        string             `bson:"username" json:"username"`
-	Password        string             `bson:"password" json:"password"`
+	Password        string             `bson:"password,omitempty" json:"password,omitempty"`
 	Name            string             `bson:"name" json:"name"`
 	Role            string             `bson:"role" json:"role"`
 	Balance         float64            `bson:"balance" json:"balance"`

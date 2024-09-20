@@ -10,6 +10,7 @@ import (
 	"github.com/gofiber/fiber/v3"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"google.golang.org/api/idtoken"
 )
 
 type UserService struct {
@@ -59,7 +60,7 @@ func (s *UserService) Register(userBody *models.UserRegisterReq) (*models.UserDa
 		return nil, err
 	}
 
-	result, err := s.createUser(userBody.Username, userBody.Password, userBody.Name)
+	result, err := s.createUser(userBody.Username, userBody.Password, userBody.Name, "")
 	if err != nil {
 		return nil, err
 	}
@@ -70,6 +71,46 @@ func (s *UserService) Register(userBody *models.UserRegisterReq) (*models.UserDa
 	}
 
 	return &models.UserDataRes{User: *result, Token: token}, nil
+}
+
+func (s *UserService) GoogleLogin(code string) (*models.UserDataRes, error) {
+	googleAuth := config.LoadGoogleAuth()
+	authToken, err := googleAuth.Exchange(context.TODO(), code)
+	if err != nil {
+		return nil, err
+	}
+
+	payload, err := idtoken.Validate(context.TODO(), authToken.Extra("id_token").(string), googleAuth.ClientID)
+	if err != nil {
+		return nil, err
+	}
+
+	username := payload.Subject
+	user, err := s.findUser(username)
+	if user != nil {
+		token, err := utils.CreateToken(user)
+		if err != nil {
+			return nil, err
+		}
+
+		return &models.UserDataRes{User: *user, Token: token}, nil
+	} else if err != nil && err != fiber.ErrBadRequest {
+		return nil, err
+	}
+
+	name := payload.Claims["name"].(string)
+	image := payload.Claims["picture"].(string)
+	user, err = s.createUser(username, "", name, image)
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := utils.CreateToken(user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.UserDataRes{User: *user, Token: token}, nil
 }
 
 func (s *UserService) Update(id string, userBody *models.User, file string) (*models.UserUpdateRes, error) {
@@ -121,7 +162,7 @@ func (s *UserService) UpdateUser(id string, userBody *models.User) (*models.User
 	return &models.UserDataRes{User: *user, Token: token}, nil
 }
 
-func (s *UserService) createUser(username string, password string, name string) (*models.User, error) {
+func (s *UserService) createUser(username string, password string, name string, image string) (*models.User, error) {
 	if password != "" {
 		if hashedPassword, err := utils.HashPassword(password); err != nil {
 			return nil, err
@@ -131,14 +172,15 @@ func (s *UserService) createUser(username string, password string, name string) 
 	}
 
 	user := &models.User{
-		UserID:    utils.GenerateUuid(),
-		Username:  username,
-		Password:  password,
-		Name:      name,
-		Role:      "user",
-		Balance:   0,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		UserID:          utils.GenerateUuid(),
+		Username:        username,
+		Password:        password,
+		Name:            name,
+		Role:            "user",
+		Balance:         0,
+		ProfileImageURL: image,
+		CreatedAt:       time.Now(),
+		UpdatedAt:       time.Now(),
 	}
 
 	if _, err := s.collection.InsertOne(context.TODO(), user); err != nil {

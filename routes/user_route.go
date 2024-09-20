@@ -61,6 +61,20 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 		return c.JSON(user)
 	})
 
+	route.Post("/google-login", func(c fiber.Ctx) error {
+		googleLoginBody := new(models.UserGoogleLoginReq)
+
+		if err := c.Bind().Body(googleLoginBody); err != nil {
+			return fiber.ErrBadRequest
+		}
+
+		user, err := userService.GoogleLogin(googleLoginBody.Code)
+		if err != nil {
+			return fiber.ErrInternalServerError
+		}
+		return c.JSON(user)
+	})
+
 	route.Put("/", func(c fiber.Ctx) error {
 		userBody := new(models.User)
 		req := c.Locals("user").(models.UserReq)
