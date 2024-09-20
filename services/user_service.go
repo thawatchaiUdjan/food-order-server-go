@@ -74,13 +74,13 @@ func (s *UserService) Register(userBody *models.UserRegisterReq) (*models.UserDa
 }
 
 func (s *UserService) GoogleLogin(code string) (*models.UserDataRes, error) {
-	googleAuth := config.LoadGoogleAuth()
-	authToken, err := googleAuth.Exchange(context.TODO(), code)
+	google := config.LoadGoogle()
+	authToken, err := google.Exchange(context.TODO(), code)
 	if err != nil {
 		return nil, err
 	}
 
-	payload, err := idtoken.Validate(context.TODO(), authToken.Extra("id_token").(string), googleAuth.ClientID)
+	payload, err := idtoken.Validate(context.TODO(), authToken.Extra("id_token").(string), google.ClientID)
 	if err != nil {
 		return nil, err
 	}
