@@ -15,6 +15,10 @@ type UserGoogleLoginReq struct {
 	Code string `bson:"code" json:"code" validate:"required"`
 }
 
+type UserFacebookLoginReq struct {
+	AccessToken string `bson:"access_token" json:"access_token" validate:"required"`
+}
+
 type FoodCartOption struct {
 	OptionString []string `json:"option_string" bson:"option_string"`
 	OptionNote   string   `json:"option_note" bson:"option_note"`

@@ -75,6 +75,20 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 		return c.JSON(user)
 	})
 
+	route.Post("/facebook-login", func(c fiber.Ctx) error {
+		facebookLoginBody := new(models.UserFacebookLoginReq)
+
+		if err := c.Bind().Body(facebookLoginBody); err != nil {
+			return fiber.ErrBadRequest
+		}
+
+		user, err := userService.FacebookLogin(facebookLoginBody.AccessToken)
+		if err != nil {
+			return fiber.ErrInternalServerError
+		}
+		return c.JSON(user)
+	})
+
 	route.Put("/", func(c fiber.Ctx) error {
 		userBody := new(models.User)
 		req := c.Locals("user").(models.UserReq)

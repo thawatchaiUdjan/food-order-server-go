@@ -2,6 +2,8 @@ package services
 
 import (
 	"context"
+	"encoding/json"
+	"net/http"
 	"time"
 
 	"github.com/food-order-server/config"
@@ -53,24 +55,7 @@ func (s *UserService) Login(userBody *models.UserLoginReq) (*models.UserDataRes,
 }
 
 func (s *UserService) Register(userBody *models.UserRegisterReq) (*models.UserDataRes, error) {
-	user, err := s.findUser(userBody.Username)
-	if user != nil {
-		return nil, fiber.ErrConflict
-	} else if err != nil && err != fiber.ErrBadRequest {
-		return nil, err
-	}
-
-	result, err := s.createUser(userBody.Username, userBody.Password, userBody.Name, "")
-	if err != nil {
-		return nil, err
-	}
-
-	token, err := utils.CreateToken(result)
-	if err != nil {
-		return nil, err
-	}
-
-	return &models.UserDataRes{User: *result, Token: token}, nil
+	return s.findOrCreateUser(userBody.Username, userBody.Password, userBody.Name, "", false)
 }
 
 func (s *UserService) GoogleLogin(code string) (*models.UserDataRes, error) {
@@ -86,31 +71,27 @@ func (s *UserService) GoogleLogin(code string) (*models.UserDataRes, error) {
 	}
 
 	username := payload.Subject
-	user, err := s.findUser(username)
-	if user != nil {
-		token, err := utils.CreateToken(user)
-		if err != nil {
-			return nil, err
-		}
-
-		return &models.UserDataRes{User: *user, Token: token}, nil
-	} else if err != nil && err != fiber.ErrBadRequest {
-		return nil, err
-	}
-
 	name := payload.Claims["name"].(string)
 	image := payload.Claims["picture"].(string)
-	user, err = s.createUser(username, "", name, image)
+
+	return s.findOrCreateUser(username, "", name, image, true)
+}
+
+func (s *UserService) FacebookLogin(accessToken string) (*models.UserDataRes, error) {
+	url := "https://graph.facebook.com/me?fields=id,name,email,first_name,last_name,picture&access_token=" + accessToken
+	res, err := http.Get(url)
 	if err != nil {
+		return nil, err
+	} else if res.StatusCode != http.StatusOK {
+		return nil, http.ErrNotSupported
+	}
+
+	user := new(models.UserFacebook)
+	if err := json.NewDecoder(res.Body).Decode(&user); err != nil {
 		return nil, err
 	}
 
-	token, err := utils.CreateToken(user)
-	if err != nil {
-		return nil, err
-	}
-
-	return &models.UserDataRes{User: *user, Token: token}, nil
+	return s.findOrCreateUser(user.ID, "", user.Name, user.ProfilePicture.URL, true)
 }
 
 func (s *UserService) Update(id string, userBody *models.User, file string) (*models.UserUpdateRes, error) {
@@ -196,4 +177,33 @@ func (s *UserService) findUser(username string) (*models.User, error) {
 		return nil, fiber.ErrBadRequest
 	}
 	return user, nil
+}
+
+func (s *UserService) findOrCreateUser(username string, password string, name string, image string, isSocial bool) (*models.UserDataRes, error) {
+	user, err := s.findUser(username)
+	if user != nil {
+		if isSocial {
+			token, err := utils.CreateToken(user)
+			if err != nil {
+				return nil, err
+			}
+			return &models.UserDataRes{User: *user, Token: token}, nil
+		} else {
+			return nil, fiber.ErrConflict
+		}
+	} else if err != nil && err != fiber.ErrBadRequest {
+		return nil, err
+	}
+
+	result, err := s.createUser(username, password, name, image)
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := utils.CreateToken(result)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.UserDataRes{User: *result, Token: token}, nil
 }

@@ -29,3 +29,14 @@ type User struct {
 	CreatedAt       time.Time          `bson:"created_at" json:"created_at"`
 	UpdatedAt       time.Time          `bson:"updated_at" json:"updated_at"`
 }
+
+type UserFacebook struct {
+	ID             string `json:"id"`
+	Name           string `json:"name"`
+	Email          string `json:"email,omitempty"`
+	FirstName      string `json:"first_name,omitempty"`
+	LastName       string `json:"last_name,omitempty"`
+	ProfilePicture struct {
+		URL string `json:"url"`
+	} `json:"picture,omitempty"`
+}
