@@ -6,6 +6,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// @Description Represents a food item.
+// @Accept json
+// @Produce json
+// @Param id path int true "Food ID"
+// @Success 200 {object} Food
 type Food struct {
 	ID                primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	FoodID            string             `bson:"food_id" json:"food_id"`

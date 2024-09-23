@@ -2,10 +2,10 @@ package middlewares
 
 import (
 	"github.com/food-order-server/models"
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 )
 
-func ErrorHandler(c fiber.Ctx, err error) error {
+func ErrorHandler(c *fiber.Ctx, err error) error {
 	var status int
 	var message string
 

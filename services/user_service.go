@@ -9,7 +9,7 @@ import (
 	"github.com/food-order-server/config"
 	"github.com/food-order-server/models"
 	"github.com/food-order-server/utils"
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/api/idtoken"

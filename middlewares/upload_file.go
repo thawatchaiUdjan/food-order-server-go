@@ -7,10 +7,10 @@ import (
 	"github.com/food-order-server/config"
 	"github.com/food-order-server/models"
 	"github.com/food-order-server/utils"
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 )
 
-func uploadFile(c fiber.Ctx, name string, id string, folder string) error {
+func uploadFile(c *fiber.Ctx, name string, id string, folder string) error {
 	cld := config.LoadCloudinary()
 	config := config.LoadConfig()
 
@@ -45,7 +45,7 @@ func uploadFile(c fiber.Ctx, name string, id string, folder string) error {
 	return c.Next()
 }
 
-func UploadFoodFile(c fiber.Ctx) error {
+func UploadFoodFile(c *fiber.Ctx) error {
 	config := config.LoadConfig()
 	name := "food_image_url"
 	folder := config.UploadFile.FoodFolder
@@ -60,7 +60,7 @@ func UploadFoodFile(c fiber.Ctx) error {
 	return nil
 }
 
-func UploadProfileFile(c fiber.Ctx) error {
+func UploadProfileFile(c *fiber.Ctx) error {
 	config := config.LoadConfig()
 	name := "profile_image_url"
 	folder := config.UploadFile.ProfileFolder

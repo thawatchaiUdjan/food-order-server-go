@@ -4,7 +4,7 @@ import (
 	"github.com/food-order-server/middlewares"
 	"github.com/food-order-server/models"
 	"github.com/food-order-server/services"
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -12,7 +12,7 @@ func FoodRoute(app *fiber.App, db *mongo.Database) {
 	foodService := services.CreateFoodService(db)
 	route := app.Group("/foods", middlewares.AuthToken)
 
-	route.Get("/", func(c fiber.Ctx) error {
+	route.Get("/", func(c *fiber.Ctx) error {
 		foods, err := foodService.FindAll()
 		if err != nil {
 			return fiber.ErrInternalServerError
@@ -20,13 +20,17 @@ func FoodRoute(app *fiber.App, db *mongo.Database) {
 		return c.JSON(foods)
 	})
 
-	route.Post("/", func(c fiber.Ctx) error {
+	route.Post("/", middlewares.UploadFoodFile, func(c *fiber.Ctx) error {
 		foodBody := new(models.FoodReq)
 		id := c.Locals("id").(string)
 		file := c.Locals("file").(string)
 
-		if err := c.Bind().Body(foodBody); err != nil {
+		if err := c.BodyParser(&foodBody); err != nil {
 			return fiber.ErrBadRequest
+		}
+
+		if err := middlewares.Validate(foodBody); err != nil {
+			return err
 		}
 
 		food, err := foodService.Create(foodBody, id, file)
@@ -35,15 +39,15 @@ func FoodRoute(app *fiber.App, db *mongo.Database) {
 		}
 
 		return c.JSON(models.FoodDataRes{Food: *food, Message: "Food added successfully"})
-	}, middlewares.UploadFoodFile)
+	})
 
-	route.Put("/:id", func(c fiber.Ctx) error {
+	route.Put("/:id", middlewares.UploadFoodFile, func(c *fiber.Ctx) error {
 		foodBody := new(models.FoodReq)
 		user := c.Locals("user").(models.UserReq)
 		id := c.Params("id")
 		file := c.Locals("file").(string)
 
-		if err := c.Bind().Body(foodBody); err != nil {
+		if err := c.BodyParser(&foodBody); err != nil {
 			return fiber.ErrBadRequest
 		}
 
@@ -57,9 +61,9 @@ func FoodRoute(app *fiber.App, db *mongo.Database) {
 		}
 
 		return c.JSON(models.FoodDataRes{Food: *food, Message: "Food item successfully updated"})
-	}, middlewares.UploadFoodFile)
+	})
 
-	route.Delete("/:id", func(c fiber.Ctx) error {
+	route.Delete("/:id", func(c *fiber.Ctx) error {
 		user := c.Locals("user").(models.UserReq)
 		id := c.Params("id")
 

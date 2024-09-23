@@ -7,8 +7,8 @@ import (
 	"github.com/food-order-server/db"
 	"github.com/food-order-server/middlewares"
 	"github.com/food-order-server/routes"
-	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/cors"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 func main() {
@@ -19,8 +19,7 @@ func main() {
 	}
 
 	app := fiber.New(fiber.Config{
-		StructValidator: middlewares.Validator(),
-		ErrorHandler:    middlewares.ErrorHandler,
+		ErrorHandler: middlewares.ErrorHandler,
 	})
 	app.Use(cors.New())
 

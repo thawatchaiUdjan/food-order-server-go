@@ -5,11 +5,11 @@ import (
 
 	"github.com/food-order-server/config"
 	"github.com/food-order-server/models"
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func AuthToken(c fiber.Ctx) error {
+func AuthToken(c *fiber.Ctx) error {
 	config := config.LoadConfig()
 	tokenString := strings.TrimPrefix(c.Get("Authorization"), "Bearer ")
 	if tokenString == "" {

@@ -4,7 +4,7 @@ import (
 	"github.com/food-order-server/middlewares"
 	"github.com/food-order-server/models"
 	"github.com/food-order-server/services"
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -12,11 +12,11 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 	userService := services.CreateUserService(db)
 	route := app.Group("/user")
 
-	route.Get("/verify-token", func(c fiber.Ctx) error {
+	route.Get("/verify-token", middlewares.AuthToken, func(c *fiber.Ctx) error {
 		return c.SendString("verify complete")
-	}, middlewares.AuthToken)
+	})
 
-	route.Get("/", func(c fiber.Ctx) error {
+	route.Get("/", middlewares.AuthToken, func(c *fiber.Ctx) error {
 		req := c.Locals("user").(models.UserReq)
 
 		user, err := userService.FindOne(req.User.UserID, req.Token)
@@ -25,13 +25,17 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 		}
 
 		return c.JSON(user)
-	}, middlewares.AuthToken)
+	})
 
-	route.Post("/login", func(c fiber.Ctx) error {
+	route.Post("/login", func(c *fiber.Ctx) error {
 		userBody := new(models.UserLoginReq)
 
-		if err := c.Bind().Body(userBody); err != nil {
+		if err := c.BodyParser(userBody); err != nil {
 			return fiber.ErrBadRequest
+		}
+
+		if err := middlewares.Validate(userBody); err != nil {
+			return err
 		}
 
 		user, err := userService.Login(userBody)
@@ -44,11 +48,15 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 		return c.JSON(user)
 	})
 
-	route.Post("/register", func(c fiber.Ctx) error {
+	route.Post("/register", func(c *fiber.Ctx) error {
 		userBody := new(models.UserRegisterReq)
 
-		if err := c.Bind().Body(userBody); err != nil {
+		if err := c.BodyParser(&userBody); err != nil {
 			return fiber.ErrBadRequest
+		}
+
+		if err := middlewares.Validate(userBody); err != nil {
+			return err
 		}
 
 		user, err := userService.Register(userBody)
@@ -61,11 +69,15 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 		return c.JSON(user)
 	})
 
-	route.Post("/google-login", func(c fiber.Ctx) error {
+	route.Post("/google-login", func(c *fiber.Ctx) error {
 		googleLoginBody := new(models.UserGoogleLoginReq)
 
-		if err := c.Bind().Body(googleLoginBody); err != nil {
+		if err := c.BodyParser(&googleLoginBody); err != nil {
 			return fiber.ErrBadRequest
+		}
+
+		if err := middlewares.Validate(googleLoginBody); err != nil {
+			return err
 		}
 
 		user, err := userService.GoogleLogin(googleLoginBody.Code)
@@ -75,11 +87,15 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 		return c.JSON(user)
 	})
 
-	route.Post("/facebook-login", func(c fiber.Ctx) error {
+	route.Post("/facebook-login", func(c *fiber.Ctx) error {
 		facebookLoginBody := new(models.UserFacebookLoginReq)
 
-		if err := c.Bind().Body(facebookLoginBody); err != nil {
+		if err := c.BodyParser(&facebookLoginBody); err != nil {
 			return fiber.ErrBadRequest
+		}
+
+		if err := middlewares.Validate(facebookLoginBody); err != nil {
+			return err
 		}
 
 		user, err := userService.FacebookLogin(facebookLoginBody.AccessToken)
@@ -89,13 +105,17 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 		return c.JSON(user)
 	})
 
-	route.Put("/", func(c fiber.Ctx) error {
+	route.Put("/", middlewares.AuthToken, middlewares.UploadProfileFile, func(c *fiber.Ctx) error {
 		userBody := new(models.User)
 		req := c.Locals("user").(models.UserReq)
 		file := c.Locals("file").(string)
 
-		if err := c.Bind().Body(userBody); err != nil {
+		if err := c.BodyParser(&userBody); err != nil {
 			return fiber.ErrBadRequest
+		}
+
+		if err := middlewares.Validate(userBody); err != nil {
+			return err
 		}
 
 		result, err := userService.Update(req.User.UserID, userBody, file)
@@ -104,9 +124,9 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 		}
 
 		return c.JSON(result)
-	}, middlewares.AuthToken, middlewares.UploadProfileFile)
+	})
 
-	route.Delete("/", func(c fiber.Ctx) error {
+	route.Delete("/", middlewares.AuthToken, func(c *fiber.Ctx) error {
 		req := c.Locals("user").(models.UserReq)
 
 		result, err := userService.Remove(req.User.UserID)
@@ -117,5 +137,5 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 		}
 
 		return c.JSON(result)
-	}, middlewares.AuthToken)
+	})
 }

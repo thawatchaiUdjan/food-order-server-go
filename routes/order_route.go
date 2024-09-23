@@ -4,7 +4,7 @@ import (
 	"github.com/food-order-server/middlewares"
 	"github.com/food-order-server/models"
 	"github.com/food-order-server/services"
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -12,7 +12,7 @@ func OrderRoute(app *fiber.App, db *mongo.Database) {
 	orderService := services.CreateOrderService(db)
 	route := app.Group("/orders", middlewares.AuthToken)
 
-	route.Get("/", func(c fiber.Ctx) error {
+	route.Get("/", func(c *fiber.Ctx) error {
 		req := c.Locals("user").(models.UserReq)
 
 		foodOrder, err := orderService.FindOne(req.User.UserID)
@@ -22,12 +22,16 @@ func OrderRoute(app *fiber.App, db *mongo.Database) {
 		return c.JSON(foodOrder)
 	})
 
-	route.Post("/", func(c fiber.Ctx) error {
+	route.Post("/", func(c *fiber.Ctx) error {
 		req := c.Locals("user").(models.UserReq)
 
 		orderReq := new(models.OrderReq)
-		if err := c.Bind().Body(orderReq); err != nil {
+		if err := c.BodyParser(&orderReq); err != nil {
 			return fiber.ErrBadRequest
+		}
+
+		if err := middlewares.Validate(orderReq); err != nil {
+			return err
 		}
 
 		foodOrder, err := orderService.Create(&req.User, orderReq)
@@ -37,7 +41,7 @@ func OrderRoute(app *fiber.App, db *mongo.Database) {
 		return c.JSON(foodOrder)
 	})
 
-	route.Put(":id/:status", func(c fiber.Ctx) error {
+	route.Put(":id/:status", func(c *fiber.Ctx) error {
 		id := c.Params("id")
 		status := c.Params("status")
 
@@ -50,7 +54,7 @@ func OrderRoute(app *fiber.App, db *mongo.Database) {
 		return c.JSON(result)
 	})
 
-	route.Delete("/:id", func(c fiber.Ctx) error {
+	route.Delete("/:id", func(c *fiber.Ctx) error {
 		id := c.Params("id")
 
 		if err := orderService.Remove(id); err != nil {
@@ -59,7 +63,7 @@ func OrderRoute(app *fiber.App, db *mongo.Database) {
 		return c.JSON(models.MessageRes{Message: "Order successfully canceled"})
 	})
 
-	route.Get("/all-order", func(c fiber.Ctx) error {
+	route.Get("/all-order", func(c *fiber.Ctx) error {
 		orders, err := orderService.FindAll()
 		if err != nil {
 			return fiber.ErrInternalServerError

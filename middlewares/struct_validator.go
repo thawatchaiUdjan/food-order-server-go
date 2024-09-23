@@ -1,15 +1,15 @@
 package middlewares
 
-import "github.com/go-playground/validator/v10"
+import (
+	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v2"
+)
 
-type StructValidator struct {
-	Validator *validator.Validate
-}
+var validate *validator.Validate = validator.New()
 
-func (v *StructValidator) Validate(out any) error {
-	return v.Validator.Struct(out)
-}
-
-func Validator() *StructValidator {
-	return &StructValidator{Validator: validator.New()}
+func Validate(data interface{}) error {
+	if err := validate.Struct(data); err != nil {
+		return fiber.ErrBadRequest
+	}
+	return nil
 }
