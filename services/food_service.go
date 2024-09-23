@@ -24,27 +24,34 @@ func CreateFoodService(db *mongo.Database) *FoodService {
 	}
 }
 
-func (s *FoodService) FindAll() ([]models.Food, error) {
+// @Summary Get all foods
+// @Description Retrieve a list of all foods from the database
+// @Tags Food
+// @Success 200 {array} models.Food
+// @Failure 500 {object} models.MessageRes
+// @Security BearerAuth
+// @Router /foods [get]
+func (s *FoodService) FindAll(c *fiber.Ctx) error {
 	var results []models.Food
 	cursor, err := s.collection.Find(context.TODO(), bson.M{})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var foods []bson.M
 	if err = cursor.All(context.TODO(), &foods); err != nil {
-		return nil, err
+		return err
 	}
 
 	for _, v := range foods {
 		id := v["food_id"].(string)
 		food, err := s.findFood(id)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		results = append(results, *food)
 	}
-	return results, nil
+	return c.JSON(results)
 }
 
 func (s *FoodService) Create(foodBody *models.FoodReq, id string, file string) (*models.Food, error) {

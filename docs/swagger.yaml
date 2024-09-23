@@ -1,0 +1,177 @@
+basePath: /
+definitions:
+  models.Food:
+    properties:
+      _id:
+        type: string
+      category_id:
+        type: string
+      created_at:
+        type: string
+      food_description:
+        type: string
+      food_id:
+        type: string
+      food_image_url:
+        type: string
+      food_name:
+        type: string
+      food_options:
+        items:
+          $ref: '#/definitions/models.FoodOption'
+        type: array
+      food_price:
+        type: number
+      food_price_discount:
+        type: number
+      permission:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.FoodOption:
+    properties:
+      _id:
+        type: string
+      created_at:
+        type: string
+      option_choices:
+        items:
+          $ref: '#/definitions/models.OptionChoice'
+        type: array
+      option_description:
+        type: string
+      option_name:
+        type: string
+      option_type:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.LatLng:
+    properties:
+      lat:
+        type: number
+      lng:
+        type: number
+    type: object
+  models.Location:
+    properties:
+      address:
+        type: string
+      latlng:
+        $ref: '#/definitions/models.LatLng'
+    type: object
+  models.MessageRes:
+    properties:
+      message:
+        type: string
+    type: object
+  models.OptionChoice:
+    properties:
+      _id:
+        type: string
+      choice_name:
+        type: string
+      choice_price:
+        type: number
+      created_at:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.User:
+    properties:
+      _id:
+        type: string
+      balance:
+        type: number
+      created_at:
+        type: string
+      location:
+        $ref: '#/definitions/models.Location'
+      name:
+        type: string
+      password:
+        type: string
+      profile_image_url:
+        type: string
+      role:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  models.UserDataRes:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+    type: object
+  models.UserLoginReq:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+host: localhost:8000
+info:
+  contact: {}
+  title: Food Order App API
+  version: 1.0.0
+paths:
+  /foods:
+    get:
+      description: Retrieve a list of all foods from the database
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Food'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+      security:
+      - BearerAuth: []
+      summary: Get all foods
+      tags:
+      - Food
+  /user/login:
+    post:
+      description: Authenticate a user and return a JWT token
+      parameters:
+      - description: User login information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserLoginReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserDataRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+      summary: User login
+      tags:
+      - User
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

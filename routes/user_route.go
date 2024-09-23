@@ -27,26 +27,7 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 		return c.JSON(user)
 	})
 
-	route.Post("/login", func(c *fiber.Ctx) error {
-		userBody := new(models.UserLoginReq)
-
-		if err := c.BodyParser(userBody); err != nil {
-			return fiber.ErrBadRequest
-		}
-
-		if err := middlewares.Validate(userBody); err != nil {
-			return err
-		}
-
-		user, err := userService.Login(userBody)
-		if err == fiber.ErrBadRequest {
-			return fiber.NewError(fiber.StatusUnauthorized, "Username or password invalid")
-		} else if err != nil {
-			return fiber.ErrInternalServerError
-		}
-
-		return c.JSON(user)
-	})
+	route.Post("/login", userService.Login)
 
 	route.Post("/register", func(c *fiber.Ctx) error {
 		userBody := new(models.UserRegisterReq)

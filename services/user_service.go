@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/food-order-server/config"
+	"github.com/food-order-server/middlewares"
 	"github.com/food-order-server/models"
 	"github.com/food-order-server/utils"
 	"github.com/gofiber/fiber/v2"
@@ -36,22 +37,43 @@ func (s *UserService) FindOne(id string, token string) (*models.UserDataRes, err
 	return &models.UserDataRes{User: *user, Token: token}, nil
 }
 
-func (s *UserService) Login(userBody *models.UserLoginReq) (*models.UserDataRes, error) {
-	user, err := s.findUser(userBody.Username)
-	if err != nil {
-		return nil, err
+// @Summary User login
+// @Description Authenticate a user and return a JWT token
+// @Tags User
+// @Param user body models.UserLoginReq true "User login information"
+// @Success 200 {object} models.UserDataRes
+// @Failure 500 {object} models.MessageRes
+// @Router /user/login [post]
+func (s *UserService) Login(c *fiber.Ctx) error {
+	userBody := new(models.UserLoginReq)
+
+	if err := c.BodyParser(userBody); err != nil {
+		return fiber.ErrBadRequest
 	}
 
-	if err = utils.VerifyPassword(userBody.Password, user.Password); err != nil {
-		return nil, err
+	if err := middlewares.Validate(userBody); err != nil {
+		return err
+	}
+
+	user, err := s.findUser(userBody.Username)
+	if err == fiber.ErrBadRequest {
+		return fiber.NewError(fiber.StatusUnauthorized, "Username or password invalid")
+	} else if err != nil {
+		return err
+	}
+
+	if err = utils.VerifyPassword(userBody.Password, user.Password); err == fiber.ErrBadRequest {
+		return fiber.NewError(fiber.StatusUnauthorized, "Username or password invalid")
+	} else if err != nil {
+		return err
 	}
 
 	token, err := utils.CreateToken(user)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &models.UserDataRes{User: *user, Token: token}, nil
+	return c.JSON(&models.UserDataRes{User: *user, Token: token})
 }
 
 func (s *UserService) Register(userBody *models.UserRegisterReq) (*models.UserDataRes, error) {
