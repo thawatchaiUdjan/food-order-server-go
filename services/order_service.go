@@ -5,6 +5,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/food-order-server/middlewares"
 	"github.com/food-order-server/models"
 	"github.com/food-order-server/utils"
 	"github.com/gofiber/fiber/v2"
@@ -29,14 +30,78 @@ func CreateOrderService(db *mongo.Database) *OrderService {
 	}
 }
 
-func (s *OrderService) Create(user *models.User, orderReq *models.OrderReq) (*models.OrderDataRes, error) {
+// @Summary Retrieve a specific food order
+// @Description Fetch a food order by user ID.
+// @Tags Order
+// @Success 200 {object} models.FoodOrderRes
+// @Failure 500 {object} models.MessageRes
+// @Security BearerAuth
+// @Router /orders [get]
+func (s *OrderService) FindOne(c *fiber.Ctx) error {
+	req := c.Locals("user").(models.UserReq)
+	id := req.User.UserID
+	foodOrder, err := s.findFoodOrderByUserId(id)
+	if err != nil {
+		return fiber.ErrInternalServerError
+	}
+
+	return c.JSON(foodOrder)
+}
+
+// @Summary Retrieve all orders
+// @Description Fetch a list of all orders.
+// @Tags Order
+// @Success 200 {array} models.OrderAll
+// @Failure 500 {object} models.MessageRes
+// @Security BearerAuth
+// @Router /all-order [get]
+func (s *OrderService) FindAll(c *fiber.Ctx) error {
+	orders, err := s.findOrders()
+	if err == mongo.ErrNoDocuments {
+		return nil
+	} else if err != nil {
+		return fiber.ErrInternalServerError
+	}
+
+	for i, order := range orders {
+		foods, err := s.findFoodByOrderId(order.OrderID)
+		if err != nil {
+			return err
+		}
+		orders[i].Foods = foods
+	}
+
+	return c.JSON(orders)
+}
+
+// @Summary Create a new food order
+// @Description Place a food order and update the user's balance.
+// @Tags Order
+// @Param order body models.UserReq true "Order request body"
+// @Success 200 {object} models.OrderDataRes
+// @Failure 500 {object} models.MessageRes
+// @Security BearerAuth
+// @Router /orders [post]
+func (s *OrderService) Create(c *fiber.Ctx) error {
+	req := c.Locals("user").(models.UserReq)
+
+	orderReq := new(models.OrderReq)
+	if err := c.BodyParser(&orderReq); err != nil {
+		return fiber.ErrBadRequest
+	}
+
+	if err := middlewares.Validate(orderReq); err != nil {
+		return err
+	}
+
+	user := req.User
 	order := orderReq.Order
 	foods := orderReq.Foods
 
 	if user.Balance >= order.TotalPrice {
 		status, err := s.orderStatusService.FindDefaultStatus()
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		order.OrderID = utils.GenerateUuid()
@@ -48,59 +113,42 @@ func (s *OrderService) Create(user *models.User, orderReq *models.OrderReq) (*mo
 		balance := math.Round((user.Balance-order.TotalPrice)*100) / 100
 		userData, err := s.userService.UpdateUser(user.UserID, &models.User{Balance: balance})
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		if _, err := s.collection.InsertOne(context.TODO(), order); err != nil {
-			return nil, err
+			return err
 		}
 
 		for _, food := range foods {
 			if err := s.createOrderFood(order.OrderID, food.Food.FoodID, &food); err != nil {
-				return nil, err
+				return err
 			}
 		}
 
 		foodOrder, err := s.findFoodOrderByUserId(order.UserID)
 		if err != nil {
-			return nil, err
+			return fiber.ErrInternalServerError
 		}
 
-		return &models.OrderDataRes{FoodOrder: *foodOrder, User: *userData, Message: "Order item successfully added"}, nil
+		return c.JSON(&models.OrderDataRes{FoodOrder: *foodOrder, User: *userData, Message: "Order item successfully added"})
 	} else {
-		return nil, fiber.ErrNotAcceptable
+		return fiber.NewError(fiber.StatusNotAcceptable, "Balance is not enough to order")
 	}
 }
 
-func (s *OrderService) FindAll() ([]models.OrderAll, error) {
-	orders, err := s.findOrders()
-	if err == mongo.ErrNoDocuments {
-		return nil, nil
-	} else if err != nil {
-		return nil, err
-	}
-
-	for i, order := range orders {
-		foods, err := s.findFoodByOrderId(order.OrderID)
-		if err != nil {
-			return nil, err
-		}
-		orders[i].Foods = foods
-	}
-
-	return orders, nil
-}
-
-func (s *OrderService) FindOne(id string) (*models.FoodOrderRes, error) {
-	foodOrder, err := s.findFoodOrderByUserId(id)
-	if err != nil {
-		return nil, err
-	}
-
-	return foodOrder, nil
-}
-
-func (s *OrderService) UpdateStatus(id string, status string) (*models.OrderUpdateRes, error) {
+// @Summary Update order status
+// @Description Change the status of an existing order by order ID.
+// @Tags Order
+// @Param id path string true "Order ID"
+// @Param status path string true "Order status id"
+// @Success 200 {object} models.OrderUpdateRes
+// @Failure 500 {object} models.MessageRes
+// @Security BearerAuth
+// @Router /orders/{id}/{status} [put]
+func (s *OrderService) UpdateStatus(c *fiber.Ctx) error {
+	id := c.Params("id")
+	status := c.Params("status")
 	statusId, _ := primitive.ObjectIDFromHex(status)
 	order := &models.OrderCreate{
 		OrderStatus: statusId,
@@ -112,25 +160,35 @@ func (s *OrderService) UpdateStatus(id string, status string) (*models.OrderUpda
 
 	if err := s.collection.FindOneAndUpdate(context.TODO(), bson.M{"order_id": id}, update, option).Decode(&order); err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, fiber.ErrNotFound
+			return fiber.NewError(fiber.StatusNotFound, "Order to update not found")
 		} else {
-			return nil, err
+			return fiber.ErrInternalServerError
 		}
 	}
 
-	return &models.OrderUpdateRes{Order: *order, Message: "Order status updated successfully"}, nil
+	return c.JSON(&models.OrderUpdateRes{Order: *order, Message: "Order status updated successfully"})
 }
 
-func (s *OrderService) Remove(id string) error {
+// @Summary Remove an order
+// @Description Delete an order by order ID.
+// @Tags Order
+// @Param id path string true "Order ID"
+// @Success 200 {object} models.MessageRes
+// @Failure 500 {object} models.MessageRes
+// @Security BearerAuth
+// @Router /orders/{id} [delete]
+func (s *OrderService) Remove(c *fiber.Ctx) error {
+	id := c.Params("id")
+
 	if _, err := s.collection.DeleteOne(context.TODO(), bson.M{"order_id": id}); err != nil {
 		return err
 	}
 
 	if err := s.removeOrderFood(id); err != nil {
-		return err
+		return fiber.ErrInternalServerError
 	}
 
-	return nil
+	return c.JSON(models.MessageRes{Message: "Order successfully canceled"})
 }
 
 func (s *OrderService) FindOrderFood(id string) error {
