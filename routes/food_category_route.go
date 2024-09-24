@@ -11,11 +11,5 @@ func FoodCategoryRoute(app *fiber.App, db *mongo.Database) {
 	foodCategoryService := services.CreateFoodCategoryService(db)
 	route := app.Group("/category", middlewares.AuthToken)
 
-	route.Get("/", func(c *fiber.Ctx) error {
-		foodCategories, err := foodCategoryService.FindAll()
-		if err != nil {
-			return fiber.ErrInternalServerError
-		}
-		return c.JSON(foodCategories)
-	})
+	route.Get("/", foodCategoryService.FindAll)
 }
