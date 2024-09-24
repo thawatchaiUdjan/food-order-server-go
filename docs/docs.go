@@ -333,7 +333,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UserReq"
+                            "$ref": "#/definitions/models.OrderReq"
                         }
                     }
                 ],
@@ -721,6 +721,37 @@ const docTemplate = `{
                 }
             }
         },
+        "models.FoodCart": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "food": {
+                    "$ref": "#/definitions/models.Food"
+                },
+                "option": {
+                    "$ref": "#/definitions/models.FoodCartOption"
+                },
+                "total": {
+                    "type": "number"
+                }
+            }
+        },
+        "models.FoodCartOption": {
+            "type": "object",
+            "properties": {
+                "option_note": {
+                    "type": "string"
+                },
+                "option_string": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "models.FoodCategory": {
             "type": "object",
             "properties": {
@@ -1078,6 +1109,24 @@ const docTemplate = `{
                 }
             }
         },
+        "models.OrderReq": {
+            "type": "object",
+            "required": [
+                "foods",
+                "order"
+            ],
+            "properties": {
+                "foods": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.FoodCart"
+                    }
+                },
+                "order": {
+                    "$ref": "#/definitions/models.OrderCreate"
+                }
+            }
+        },
         "models.OrderStatus": {
             "type": "object",
             "properties": {
@@ -1189,17 +1238,6 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
-                }
-            }
-        },
-        "models.UserReq": {
-            "type": "object",
-            "properties": {
-                "token": {
-                    "type": "string"
-                },
-                "user": {
-                    "$ref": "#/definitions/models.User"
                 }
             }
         },

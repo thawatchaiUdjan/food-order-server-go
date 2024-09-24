@@ -77,7 +77,7 @@ func (s *OrderService) FindAll(c *fiber.Ctx) error {
 // @Summary Create a new food order
 // @Description Place a food order and update the user's balance.
 // @Tags Order
-// @Param order body models.UserReq true "Order request body"
+// @Param order body models.OrderReq true "Order request body"
 // @Success 200 {object} models.OrderDataRes
 // @Failure 500 {object} models.MessageRes
 // @Security BearerAuth

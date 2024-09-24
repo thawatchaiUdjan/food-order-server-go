@@ -44,6 +44,26 @@ definitions:
       updated_at:
         type: string
     type: object
+  models.FoodCart:
+    properties:
+      amount:
+        type: integer
+      food:
+        $ref: '#/definitions/models.Food'
+      option:
+        $ref: '#/definitions/models.FoodCartOption'
+      total:
+        type: number
+    type: object
+  models.FoodCartOption:
+    properties:
+      option_note:
+        type: string
+      option_string:
+        items:
+          type: string
+        type: array
+    type: object
   models.FoodCategory:
     properties:
       _id:
@@ -279,6 +299,18 @@ definitions:
       updated_at:
         type: string
     type: object
+  models.OrderReq:
+    properties:
+      foods:
+        items:
+          $ref: '#/definitions/models.FoodCart'
+        type: array
+      order:
+        $ref: '#/definitions/models.OrderCreate'
+    required:
+    - foods
+    - order
+    type: object
   models.OrderStatus:
     properties:
       _id:
@@ -353,13 +385,6 @@ definitions:
     - name
     - password
     - username
-    type: object
-  models.UserReq:
-    properties:
-      token:
-        type: string
-      user:
-        $ref: '#/definitions/models.User'
     type: object
   models.UserUpdateRes:
     properties:
@@ -568,7 +593,7 @@ paths:
         name: order
         required: true
         schema:
-          $ref: '#/definitions/models.UserReq'
+          $ref: '#/definitions/models.OrderReq'
       responses:
         "200":
           description: OK
