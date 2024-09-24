@@ -1,5 +1,20 @@
 basePath: /
 definitions:
+  models.DeliveryOption:
+    properties:
+      _id:
+        type: string
+      created_at:
+        type: string
+      delivery_cost:
+        type: number
+      delivery_description:
+        type: string
+      delivery_name:
+        type: string
+      updated_at:
+        type: string
+    type: object
   models.Food:
     properties:
       _id:
@@ -29,6 +44,19 @@ definitions:
       updated_at:
         type: string
     type: object
+  models.FoodCategory:
+    properties:
+      _id:
+        type: string
+      category_id:
+        type: string
+      category_name:
+        type: string
+      created_at:
+        type: string
+      updated_at:
+        type: string
+    type: object
   models.FoodDataRes:
     properties:
       food:
@@ -54,6 +82,15 @@ definitions:
         type: string
       updated_at:
         type: string
+    type: object
+  models.FoodOrderRes:
+    properties:
+      foods:
+        items:
+          $ref: '#/definitions/models.OrderFood'
+        type: array
+      order:
+        $ref: '#/definitions/models.Order'
     type: object
   models.FoodReq:
     properties:
@@ -113,6 +150,155 @@ definitions:
       updated_at:
         type: string
     type: object
+  models.Order:
+    properties:
+      created_at:
+        type: string
+      order_address:
+        type: string
+      order_delivery_option:
+        $ref: '#/definitions/models.DeliveryOption'
+      order_id:
+        type: string
+      order_status:
+        $ref: '#/definitions/models.OrderStatus'
+      subtotal_price:
+        type: number
+      total_price:
+        type: number
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.OrderAll:
+    properties:
+      balance:
+        type: number
+      created_at:
+        type: string
+      delivery_option:
+        $ref: '#/definitions/models.DeliveryOption'
+      foods:
+        items:
+          $ref: '#/definitions/models.OrderFood'
+        type: array
+      location:
+        $ref: '#/definitions/models.Location'
+      name:
+        type: string
+      order_address:
+        type: string
+      order_id:
+        type: string
+      order_status:
+        type: string
+      password:
+        type: string
+      profile_image_url:
+        type: string
+      role:
+        type: string
+      status_name:
+        type: string
+      status_value:
+        type: integer
+      subtotal_price:
+        type: number
+      total_price:
+        type: number
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  models.OrderCreate:
+    properties:
+      created_at:
+        type: string
+      order_address:
+        type: string
+      order_delivery_option:
+        type: string
+      order_id:
+        type: string
+      order_status:
+        type: string
+      subtotal_price:
+        type: number
+      total_price:
+        type: number
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.OrderDataRes:
+    properties:
+      foodOrder:
+        $ref: '#/definitions/models.FoodOrderRes'
+      message:
+        type: string
+      user:
+        $ref: '#/definitions/models.UserDataRes'
+    type: object
+  models.OrderFood:
+    properties:
+      _id:
+        type: string
+      category_id:
+        type: string
+      created_at:
+        type: string
+      food_amount:
+        type: integer
+      food_description:
+        type: string
+      food_id:
+        type: string
+      food_image_url:
+        type: string
+      food_name:
+        type: string
+      food_option_note:
+        type: string
+      food_option_string:
+        items:
+          type: string
+        type: array
+      food_price:
+        type: number
+      food_price_discount:
+        type: number
+      food_total_price:
+        type: number
+      order_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.OrderStatus:
+    properties:
+      _id:
+        type: string
+      created_at:
+        type: string
+      status_name:
+        type: string
+      status_value:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.OrderUpdateRes:
+    properties:
+      message:
+        type: string
+      order:
+        $ref: '#/definitions/models.OrderCreate'
+    type: object
   models.User:
     properties:
       _id:
@@ -168,6 +354,13 @@ definitions:
     - password
     - username
     type: object
+  models.UserReq:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+    type: object
   models.UserUpdateRes:
     properties:
       message:
@@ -181,29 +374,64 @@ info:
   title: Food Order App API
   version: 1.0.0
 paths:
-  /foods:
-    delete:
-      description: Delete a food item by ID.
-      parameters:
-      - description: Food ID
-        in: path
-        name: id
-        required: true
-        type: string
+  /category:
+    get:
+      description: Fetch a list of all food categories.
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.MessageRes'
+            items:
+              $ref: '#/definitions/models.FoodCategory'
+            type: array
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.MessageRes'
       security:
       - BearerAuth: []
-      summary: Remove a food item
+      summary: Retrieve all food categories
       tags:
-      - Food
+      - Food Category
+  /delivery:
+    get:
+      description: Fetch a list of all delivery options sorted by delivery cost.
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.DeliveryOption'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+      security:
+      - BearerAuth: []
+      summary: Retrieve all delivery options
+      tags:
+      - Delivery Option
+  /food-option:
+    get:
+      description: Fetch a list of all food options with their associated choices.
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.FoodOption'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+      security:
+      - BearerAuth: []
+      summary: Retrieve all food options
+      tags:
+      - Food Option
+  /foods:
     get:
       description: Retrieve a list of all foods from the database
       responses:
@@ -245,6 +473,29 @@ paths:
       summary: Create a new food item
       tags:
       - Food
+  /foods/{id}:
+    delete:
+      description: Delete a food item by ID.
+      parameters:
+      - description: Food ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+      security:
+      - BearerAuth: []
+      summary: Remove a food item
+      tags:
+      - Food
     put:
       description: Modify food item details by ID.
       parameters:
@@ -273,6 +524,135 @@ paths:
       summary: Update a food item
       tags:
       - Food
+  /order-status:
+    get:
+      description: Fetch a list of all order statuses.
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.OrderStatus'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+      security:
+      - BearerAuth: []
+      summary: Retrieve all order statuses
+      tags:
+      - Order Status
+  /orders:
+    get:
+      description: Fetch a food order by user ID.
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FoodOrderRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+      security:
+      - BearerAuth: []
+      summary: Retrieve a specific food order
+      tags:
+      - Order
+    post:
+      description: Place a food order and update the user's balance.
+      parameters:
+      - description: Order request body
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.OrderDataRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+      security:
+      - BearerAuth: []
+      summary: Create a new food order
+      tags:
+      - Order
+  /orders/{id}:
+    delete:
+      description: Delete an order by order ID.
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+      security:
+      - BearerAuth: []
+      summary: Remove an order
+      tags:
+      - Order
+  /orders/{id}/{status}:
+    put:
+      description: Change the status of an existing order by order ID.
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Order status id
+        in: path
+        name: status
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.OrderUpdateRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+      security:
+      - BearerAuth: []
+      summary: Update order status
+      tags:
+      - Order
+  /orders/all-order:
+    get:
+      description: Fetch a list of all orders.
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.OrderAll'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+      security:
+      - BearerAuth: []
+      summary: Retrieve all orders
+      tags:
+      - Order
   /user:
     delete:
       description: Delete a user account by user ID.

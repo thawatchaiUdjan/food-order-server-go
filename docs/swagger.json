@@ -8,6 +8,99 @@
     "host": "localhost:8000",
     "basePath": "/",
     "paths": {
+        "/category": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Fetch a list of all food categories.",
+                "tags": [
+                    "Food Category"
+                ],
+                "summary": "Retrieve all food categories",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.FoodCategory"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/delivery": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Fetch a list of all delivery options sorted by delivery cost.",
+                "tags": [
+                    "Delivery Option"
+                ],
+                "summary": "Retrieve all delivery options",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.DeliveryOption"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/food-option": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Fetch a list of all food options with their associated choices.",
+                "tags": [
+                    "Food Option"
+                ],
+                "summary": "Retrieve all food options",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.FoodOption"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageRes"
+                        }
+                    }
+                }
+            }
+        },
         "/foods": {
             "get": {
                 "security": [
@@ -28,50 +121,6 @@
                             "items": {
                                 "$ref": "#/definitions/models.Food"
                             }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.MessageRes"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Modify food item details by ID.",
-                "tags": [
-                    "Food"
-                ],
-                "summary": "Update a food item",
-                "parameters": [
-                    {
-                        "description": "Food request body",
-                        "name": "food",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.FoodReq"
-                        }
-                    },
-                    {
-                        "type": "string",
-                        "description": "Food ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.FoodDataRes"
                         }
                     },
                     "500": {
@@ -118,6 +167,52 @@
                         }
                     }
                 }
+            }
+        },
+        "/foods/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Modify food item details by ID.",
+                "tags": [
+                    "Food"
+                ],
+                "summary": "Update a food item",
+                "parameters": [
+                    {
+                        "description": "Food request body",
+                        "name": "food",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.FoodReq"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Food ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.FoodDataRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageRes"
+                        }
+                    }
+                }
             },
             "delete": {
                 "security": [
@@ -144,6 +239,214 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.MessageRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/order-status": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Fetch a list of all order statuses.",
+                "tags": [
+                    "Order Status"
+                ],
+                "summary": "Retrieve all order statuses",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.OrderStatus"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Fetch a food order by user ID.",
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Retrieve a specific food order",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.FoodOrderRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageRes"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Place a food order and update the user's balance.",
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Create a new food order",
+                "parameters": [
+                    {
+                        "description": "Order request body",
+                        "name": "order",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UserReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.OrderDataRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/all-order": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Fetch a list of all orders.",
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Retrieve all orders",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.OrderAll"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete an order by order ID.",
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Remove an order",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Order ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{id}/{status}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Change the status of an existing order by order ID.",
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Update order status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Order ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Order status id",
+                        "name": "status",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.OrderUpdateRes"
                         }
                     },
                     "500": {
@@ -310,6 +613,29 @@
         }
     },
     "definitions": {
+        "models.DeliveryOption": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "delivery_cost": {
+                    "type": "number"
+                },
+                "delivery_description": {
+                    "type": "string"
+                },
+                "delivery_name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Food": {
             "type": "object",
             "properties": {
@@ -354,6 +680,26 @@
                 }
             }
         },
+        "models.FoodCategory": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "category_id": {
+                    "type": "string"
+                },
+                "category_name": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "models.FoodDataRes": {
             "type": "object",
             "properties": {
@@ -391,6 +737,20 @@
                 },
                 "updated_at": {
                     "type": "string"
+                }
+            }
+        },
+        "models.FoodOrderRes": {
+            "type": "object",
+            "properties": {
+                "foods": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.OrderFood"
+                    }
+                },
+                "order": {
+                    "$ref": "#/definitions/models.Order"
                 }
             }
         },
@@ -481,6 +841,233 @@
                 }
             }
         },
+        "models.Order": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "order_address": {
+                    "type": "string"
+                },
+                "order_delivery_option": {
+                    "$ref": "#/definitions/models.DeliveryOption"
+                },
+                "order_id": {
+                    "type": "string"
+                },
+                "order_status": {
+                    "$ref": "#/definitions/models.OrderStatus"
+                },
+                "subtotal_price": {
+                    "type": "number"
+                },
+                "total_price": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.OrderAll": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "number"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "delivery_option": {
+                    "$ref": "#/definitions/models.DeliveryOption"
+                },
+                "foods": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.OrderFood"
+                    }
+                },
+                "location": {
+                    "$ref": "#/definitions/models.Location"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "order_address": {
+                    "type": "string"
+                },
+                "order_id": {
+                    "type": "string"
+                },
+                "order_status": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "profile_image_url": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "status_name": {
+                    "type": "string"
+                },
+                "status_value": {
+                    "type": "integer"
+                },
+                "subtotal_price": {
+                    "type": "number"
+                },
+                "total_price": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.OrderCreate": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "order_address": {
+                    "type": "string"
+                },
+                "order_delivery_option": {
+                    "type": "string"
+                },
+                "order_id": {
+                    "type": "string"
+                },
+                "order_status": {
+                    "type": "string"
+                },
+                "subtotal_price": {
+                    "type": "number"
+                },
+                "total_price": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.OrderDataRes": {
+            "type": "object",
+            "properties": {
+                "foodOrder": {
+                    "$ref": "#/definitions/models.FoodOrderRes"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/models.UserDataRes"
+                }
+            }
+        },
+        "models.OrderFood": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "category_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "food_amount": {
+                    "type": "integer"
+                },
+                "food_description": {
+                    "type": "string"
+                },
+                "food_id": {
+                    "type": "string"
+                },
+                "food_image_url": {
+                    "type": "string"
+                },
+                "food_name": {
+                    "type": "string"
+                },
+                "food_option_note": {
+                    "type": "string"
+                },
+                "food_option_string": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "food_price": {
+                    "type": "number"
+                },
+                "food_price_discount": {
+                    "type": "number"
+                },
+                "food_total_price": {
+                    "type": "number"
+                },
+                "order_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.OrderStatus": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "status_name": {
+                    "type": "string"
+                },
+                "status_value": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.OrderUpdateRes": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "order": {
+                    "$ref": "#/definitions/models.OrderCreate"
+                }
+            }
+        },
         "models.User": {
             "type": "object",
             "properties": {
@@ -561,6 +1148,17 @@
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "models.UserReq": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/models.User"
                 }
             }
         },

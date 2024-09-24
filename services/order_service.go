@@ -54,7 +54,7 @@ func (s *OrderService) FindOne(c *fiber.Ctx) error {
 // @Success 200 {array} models.OrderAll
 // @Failure 500 {object} models.MessageRes
 // @Security BearerAuth
-// @Router /all-order [get]
+// @Router /orders/all-order [get]
 func (s *OrderService) FindAll(c *fiber.Ctx) error {
 	orders, err := s.findOrders()
 	if err == mongo.ErrNoDocuments {
