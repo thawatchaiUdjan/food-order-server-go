@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/food-order-server/models"
+	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -19,17 +20,24 @@ func CreateDeliveryOptionService(db *mongo.Database) *DeliveryOptionService {
 	}
 }
 
-func (s *DeliveryOptionService) FindAll() ([]models.DeliveryOption, error) {
+// @Summary Retrieve all delivery options
+// @Description Fetch a list of all delivery options sorted by delivery cost.
+// @Tags Delivery Option
+// @Success 200 {array} models.DeliveryOption
+// @Failure 500 {object} models.MessageRes
+// @Security BearerAuth
+// @Router /delivery [get]
+func (s *DeliveryOptionService) FindAll(c *fiber.Ctx) error {
 	sort := options.Find().SetSort(bson.D{{Key: "delivery_cost", Value: 1}})
 	cursor, err := s.collection.Find(context.TODO(), bson.M{}, sort)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var deliveryOptions []models.DeliveryOption
 	if err := cursor.All(context.TODO(), &deliveryOptions); err != nil {
-		return nil, err
+		return fiber.ErrInternalServerError
 	}
 
-	return deliveryOptions, nil
+	return c.JSON(deliveryOptions)
 }

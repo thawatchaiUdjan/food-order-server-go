@@ -11,11 +11,5 @@ func DeliveryOptionRoute(app *fiber.App, db *mongo.Database) {
 	deliveryOptionService := services.CreateDeliveryOptionService(db)
 	route := app.Group("/delivery", middlewares.AuthToken)
 
-	route.Get("/", func(c *fiber.Ctx) error {
-		deliveryOptions, err := deliveryOptionService.FindAll()
-		if err != nil {
-			return fiber.ErrInternalServerError
-		}
-		return c.JSON(deliveryOptions)
-	})
+	route.Get("/", deliveryOptionService.FindAll)
 }
