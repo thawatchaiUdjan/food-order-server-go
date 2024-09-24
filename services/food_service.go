@@ -113,7 +113,7 @@ func (s *FoodService) Create(c *fiber.Ctx) error {
 // @Success 200 {object} models.FoodDataRes
 // @Failure 500 {object} models.MessageRes
 // @Security BearerAuth
-// @Router /foods [put]
+// @Router /foods/{id} [put]
 func (s *FoodService) Update(c *fiber.Ctx) error {
 	foodBody := new(models.FoodReq)
 	id := c.Params("id")
@@ -162,7 +162,7 @@ func (s *FoodService) Update(c *fiber.Ctx) error {
 // @Success 200 {object} models.MessageRes
 // @Failure 500 {object} models.MessageRes
 // @Security BearerAuth
-// @Router /foods [delete]
+// @Router /foods/{id} [delete]
 func (s *FoodService) Remove(c *fiber.Ctx) error {
 	user := c.Locals("user").(models.UserReq)
 	id := c.Params("id")
