@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/food-order-server/config"
+	"github.com/food-order-server/middlewares"
 	"github.com/food-order-server/models"
 	"github.com/food-order-server/utils"
 	"github.com/gofiber/fiber/v2"
@@ -54,7 +55,27 @@ func (s *FoodService) FindAll(c *fiber.Ctx) error {
 	return c.JSON(results)
 }
 
-func (s *FoodService) Create(foodBody *models.FoodReq, id string, file string) (*models.Food, error) {
+// @Summary Create a new food item
+// @Description Create a new food item with the provided details.
+// @Tags Food
+// @Param food body models.FoodReq true "Food request body"
+// @Success 200 {object} models.FoodDataRes
+// @Failure 500 {object} models.MessageRes
+// @Security BearerAuth
+// @Router /foods [post]
+func (s *FoodService) Create(c *fiber.Ctx) error {
+	foodBody := new(models.FoodReq)
+	id := c.Locals("id").(string)
+	file := c.Locals("file").(string)
+
+	if err := c.BodyParser(&foodBody); err != nil {
+		return fiber.ErrBadRequest
+	}
+
+	if err := middlewares.Validate(foodBody); err != nil {
+		return err
+	}
+
 	if id == "" {
 		id = utils.GenerateUuid()
 	}
@@ -73,22 +94,40 @@ func (s *FoodService) Create(foodBody *models.FoodReq, id string, file string) (
 	}
 
 	if _, err := s.collection.InsertOne(context.TODO(), food); err != nil {
-		return nil, err
+		return err
 	}
 
-	return s.findFood(id)
+	result, err := s.findFood(id)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(models.FoodDataRes{Food: *result, Message: "Food added successfully"})
 }
 
-func (s *FoodService) Update(user models.UserReq, id string, foodBody *models.FoodReq, file string) (*models.Food, error) {
-	err := s.orderService.FindOrderFood(id)
-	if err == nil {
-		return nil, fiber.ErrNotAcceptable
+// @Summary Update a food item
+// @Description Modify food item details by ID.
+// @Tags Food
+// @Param food body models.FoodReq true "Food request body"
+// @Param id path string true "Food ID"
+// @Success 200 {object} models.FoodDataRes
+// @Failure 500 {object} models.MessageRes
+// @Security BearerAuth
+// @Router /foods [put]
+func (s *FoodService) Update(c *fiber.Ctx) error {
+	foodBody := new(models.FoodReq)
+	id := c.Params("id")
+	user := c.Locals("user").(models.UserReq)
+	file := c.Locals("file").(string)
+
+	if err := s.orderService.FindOrderFood(id); err == nil {
+		return fiber.NewError(fiber.StatusNotAcceptable, "Food is currently ordered, cannot update")
 	} else if err != fiber.ErrNotFound {
-		return nil, err
+		return err
 	}
 
 	if err := s.checkFoodPermission(user.User.Role, id); err != nil {
-		return nil, err
+		return fiber.NewError(fiber.StatusNotAcceptable, "No permission for this food. Please try another food")
 	}
 
 	food := &models.FoodCreate{
@@ -105,22 +144,38 @@ func (s *FoodService) Update(user models.UserReq, id string, foodBody *models.Fo
 	update := utils.CreateBSON(food)
 
 	if _, err := s.collection.UpdateOne(context.TODO(), bson.M{"food_id": id}, update); err != nil {
-		return nil, err
+		return err
 	}
 
-	return s.findFood(id)
+	result, err := s.findFood(id)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(models.FoodDataRes{Food: *result, Message: "Food item successfully updated"})
 }
 
-func (s *FoodService) Remove(user models.UserReq, id string) error {
+// @Summary Remove a food item
+// @Description Delete a food item by ID.
+// @Tags Food
+// @Param id path string true "Food ID"
+// @Success 200 {object} models.MessageRes
+// @Failure 500 {object} models.MessageRes
+// @Security BearerAuth
+// @Router /foods [delete]
+func (s *FoodService) Remove(c *fiber.Ctx) error {
+	user := c.Locals("user").(models.UserReq)
+	id := c.Params("id")
+
 	err := s.orderService.FindOrderFood(id)
 	if err == nil {
-		return fiber.ErrNotAcceptable
+		return fiber.NewError(fiber.StatusNotAcceptable, "Food is currently ordered, cannot delete")
 	} else if err != fiber.ErrNotFound {
 		return err
 	}
 
 	if err := s.checkFoodPermission(user.User.Role, id); err != nil {
-		return err
+		return fiber.NewError(fiber.StatusNotAcceptable, "No permission for this food. Please try another food")
 	}
 
 	config := config.LoadConfig()
@@ -133,7 +188,7 @@ func (s *FoodService) Remove(user models.UserReq, id string) error {
 		return err
 	}
 
-	return nil
+	return c.JSON(models.MessageRes{Message: "Food item successfully deleted"})
 }
 
 func (s *FoodService) findFood(id string) (*models.Food, error) {

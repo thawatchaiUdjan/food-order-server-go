@@ -44,6 +44,122 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Modify food item details by ID.",
+                "tags": [
+                    "Food"
+                ],
+                "summary": "Update a food item",
+                "parameters": [
+                    {
+                        "description": "Food request body",
+                        "name": "food",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.FoodReq"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Food ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.FoodDataRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageRes"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new food item with the provided details.",
+                "tags": [
+                    "Food"
+                ],
+                "summary": "Create a new food item",
+                "parameters": [
+                    {
+                        "description": "Food request body",
+                        "name": "food",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.FoodReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.FoodDataRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageRes"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a food item by ID.",
+                "tags": [
+                    "Food"
+                ],
+                "summary": "Remove a food item",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Food ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageRes"
+                        }
+                    }
+                }
             }
         },
         "/user/login": {
@@ -126,6 +242,17 @@ const docTemplate = `{
                 }
             }
         },
+        "models.FoodDataRes": {
+            "type": "object",
+            "properties": {
+                "food": {
+                    "$ref": "#/definitions/models.Food"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "models.FoodOption": {
             "type": "object",
             "properties": {
@@ -152,6 +279,43 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "type": "string"
+                }
+            }
+        },
+        "models.FoodReq": {
+            "type": "object",
+            "required": [
+                "category_id",
+                "food_description",
+                "food_name",
+                "food_options",
+                "food_price",
+                "food_price_discount"
+            ],
+            "properties": {
+                "category_id": {
+                    "type": "string"
+                },
+                "food_description": {
+                    "type": "string"
+                },
+                "food_image_url": {
+                    "type": "string"
+                },
+                "food_name": {
+                    "type": "string"
+                },
+                "food_options": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "food_price": {
+                    "type": "number"
+                },
+                "food_price_discount": {
+                    "type": "number"
                 }
             }
         },

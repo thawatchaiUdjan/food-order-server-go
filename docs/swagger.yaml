@@ -29,6 +29,13 @@ definitions:
       updated_at:
         type: string
     type: object
+  models.FoodDataRes:
+    properties:
+      food:
+        $ref: '#/definitions/models.Food'
+      message:
+        type: string
+    type: object
   models.FoodOption:
     properties:
       _id:
@@ -47,6 +54,32 @@ definitions:
         type: string
       updated_at:
         type: string
+    type: object
+  models.FoodReq:
+    properties:
+      category_id:
+        type: string
+      food_description:
+        type: string
+      food_image_url:
+        type: string
+      food_name:
+        type: string
+      food_options:
+        items:
+          type: string
+        type: array
+      food_price:
+        type: number
+      food_price_discount:
+        type: number
+    required:
+    - category_id
+    - food_description
+    - food_name
+    - food_options
+    - food_price
+    - food_price_discount
     type: object
   models.LatLng:
     properties:
@@ -129,6 +162,28 @@ info:
   version: 1.0.0
 paths:
   /foods:
+    delete:
+      description: Delete a food item by ID.
+      parameters:
+      - description: Food ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+      security:
+      - BearerAuth: []
+      summary: Remove a food item
+      tags:
+      - Food
     get:
       description: Retrieve a list of all foods from the database
       responses:
@@ -145,6 +200,57 @@ paths:
       security:
       - BearerAuth: []
       summary: Get all foods
+      tags:
+      - Food
+    post:
+      description: Create a new food item with the provided details.
+      parameters:
+      - description: Food request body
+        in: body
+        name: food
+        required: true
+        schema:
+          $ref: '#/definitions/models.FoodReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FoodDataRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+      security:
+      - BearerAuth: []
+      summary: Create a new food item
+      tags:
+      - Food
+    put:
+      description: Modify food item details by ID.
+      parameters:
+      - description: Food request body
+        in: body
+        name: food
+        required: true
+        schema:
+          $ref: '#/definitions/models.FoodReq'
+      - description: Food ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FoodDataRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+      security:
+      - BearerAuth: []
+      summary: Update a food item
       tags:
       - Food
   /user/login:
