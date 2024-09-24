@@ -101,7 +101,7 @@ func (s *UserService) Login(c *fiber.Ctx) error {
 // @Param user body models.UserRegisterReq true "User register information"
 // @Success 200 {object} models.UserDataRes
 // @Failure 500 {object} models.MessageRes
-// @Router /user/login [post]
+// @Router /user/register [post]
 func (s *UserService) Register(c *fiber.Ctx) error {
 	userBody := new(models.UserRegisterReq)
 

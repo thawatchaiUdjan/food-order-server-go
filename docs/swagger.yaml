@@ -711,6 +711,28 @@ paths:
       - User
   /user/login:
     post:
+      description: Authenticate a user and return user, token
+      parameters:
+      - description: User login information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserLoginReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserDataRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+      summary: User login
+      tags:
+      - User
+  /user/register:
+    post:
       description: Create a new user account with the provided details.
       parameters:
       - description: User register information

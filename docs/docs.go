@@ -558,6 +558,40 @@ const docTemplate = `{
         },
         "/user/login": {
             "post": {
+                "description": "Authenticate a user and return user, token",
+                "tags": [
+                    "User"
+                ],
+                "summary": "User login",
+                "parameters": [
+                    {
+                        "description": "User login information",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UserLoginReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserDataRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.MessageRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/register": {
+            "post": {
                 "description": "Create a new user account with the provided details.",
                 "tags": [
                     "User"
