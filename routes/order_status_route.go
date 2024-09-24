@@ -11,11 +11,5 @@ func OrderStatusRoute(app *fiber.App, db *mongo.Database) {
 	orderStatusService := services.CreateOrderStatusService(db)
 	route := app.Group("/order-status", middlewares.AuthToken)
 
-	route.Get("/", func(c *fiber.Ctx) error {
-		orderStatus, err := orderStatusService.FindAll()
-		if err != nil {
-			return fiber.ErrInternalServerError
-		}
-		return c.JSON(orderStatus)
-	})
+	route.Get("/", orderStatusService.FindAll)
 }

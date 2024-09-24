@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/food-order-server/models"
+	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -19,20 +20,27 @@ func CreateOrderStatusService(db *mongo.Database) *OrderStatusService {
 	}
 }
 
-func (s *OrderStatusService) FindAll() ([]models.OrderStatus, error) {
+// @Summary Retrieve all order statuses
+// @Description Fetch a list of all order statuses.
+// @Tags Order Status
+// @Success 200 {array} models.OrderStatus
+// @Failure 500 {object} models.MessageRes
+// @Security BearerAuth
+// @Router /order-status [get]
+func (s *OrderStatusService) FindAll(c *fiber.Ctx) error {
 	var results []models.OrderStatus
 	cursor, err := s.collection.Find(context.TODO(), bson.M{})
 	if err == mongo.ErrNoDocuments {
-		return nil, nil
+		return nil
 	} else if err != nil {
-		return nil, err
+		return err
 	}
 
 	if err := cursor.All(context.TODO(), &results); err != nil {
-		return nil, err
+		return fiber.ErrInternalServerError
 	}
 
-	return results, nil
+	return c.JSON(results)
 }
 
 func (s *OrderStatusService) FindDefaultStatus() (primitive.ObjectID, error) {
