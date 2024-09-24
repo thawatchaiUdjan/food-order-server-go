@@ -130,15 +130,22 @@ func (s *FoodService) Update(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusNotAcceptable, "No permission for this food. Please try another food")
 	}
 
+	if err := c.BodyParser(&foodBody); err != nil {
+		return fiber.ErrBadRequest
+	}
+
 	food := &models.FoodCreate{
 		FoodName:          foodBody.FoodName,
 		FoodPrice:         foodBody.FoodPrice,
 		FoodPriceDiscount: foodBody.FoodPriceDiscount,
 		FoodDescription:   foodBody.FoodDescription,
 		CategoryID:        foodBody.CategoryID,
-		FoodImageURL:      file,
 		FoodOptions:       utils.ConvertToObjectIDs(foodBody.FoodOptions),
 		UpdatedAt:         time.Now(),
+	}
+
+	if file != "" {
+		food.FoodImageURL = file
 	}
 
 	update := utils.CreateBSON(food)
