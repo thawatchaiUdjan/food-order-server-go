@@ -155,6 +155,26 @@ definitions:
     - password
     - username
     type: object
+  models.UserRegisterReq:
+    properties:
+      name:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - name
+    - password
+    - username
+    type: object
+  models.UserUpdateRes:
+    properties:
+      message:
+        type: string
+      user:
+        $ref: '#/definitions/models.UserDataRes'
+    type: object
 host: localhost:8000
 info:
   contact: {}
@@ -253,16 +273,25 @@ paths:
       summary: Update a food item
       tags:
       - Food
-  /user/login:
-    post:
-      description: Authenticate a user and return a JWT token
-      parameters:
-      - description: User login information
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/models.UserLoginReq'
+  /user:
+    delete:
+      description: Delete a user account by user ID.
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+      security:
+      - BearerAuth: []
+      summary: Remove a user account
+      tags:
+      - User
+    get:
+      description: Fetch user details based on user ID.
       responses:
         "200":
           description: OK
@@ -272,7 +301,71 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.MessageRes'
-      summary: User login
+      security:
+      - BearerAuth: []
+      summary: Retrieve a user by ID
+      tags:
+      - User
+    put:
+      description: Modify existing user details by user ID.
+      parameters:
+      - description: User update information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserUpdateRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+      security:
+      - BearerAuth: []
+      summary: Update user information
+      tags:
+      - User
+  /user/login:
+    post:
+      description: Create a new user account with the provided details.
+      parameters:
+      - description: User register information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserRegisterReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserDataRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+      summary: Register a new user
+      tags:
+      - User
+  /user/verify-token:
+    get:
+      description: Check the validity of the user token.
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.MessageRes'
+      security:
+      - BearerAuth: []
+      summary: Verify user token
       tags:
       - User
 securityDefinitions:

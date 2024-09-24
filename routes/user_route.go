@@ -2,7 +2,6 @@ package routes
 
 import (
 	"github.com/food-order-server/middlewares"
-	"github.com/food-order-server/models"
 	"github.com/food-order-server/services"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -12,111 +11,12 @@ func UserRoute(app *fiber.App, db *mongo.Database) {
 	userService := services.CreateUserService(db)
 	route := app.Group("/user")
 
-	route.Get("/verify-token", middlewares.AuthToken, func(c *fiber.Ctx) error {
-		return c.SendString("verify complete")
-	})
-
-	route.Get("/", middlewares.AuthToken, func(c *fiber.Ctx) error {
-		req := c.Locals("user").(models.UserReq)
-
-		user, err := userService.FindOne(req.User.UserID, req.Token)
-		if err != nil {
-			return fiber.ErrInternalServerError
-		}
-
-		return c.JSON(user)
-	})
-
+	route.Get("/verify-token", middlewares.AuthToken, userService.VerifyToken)
+	route.Get("/", middlewares.AuthToken, userService.FindOne)
 	route.Post("/login", userService.Login)
-
-	route.Post("/register", func(c *fiber.Ctx) error {
-		userBody := new(models.UserRegisterReq)
-
-		if err := c.BodyParser(&userBody); err != nil {
-			return fiber.ErrBadRequest
-		}
-
-		if err := middlewares.Validate(userBody); err != nil {
-			return err
-		}
-
-		user, err := userService.Register(userBody)
-		if err == fiber.ErrConflict {
-			return fiber.NewError(fiber.StatusConflict, "Username is already in use")
-		} else if err != nil {
-			return fiber.ErrInternalServerError
-		}
-
-		return c.JSON(user)
-	})
-
-	route.Post("/google-login", func(c *fiber.Ctx) error {
-		googleLoginBody := new(models.UserGoogleLoginReq)
-
-		if err := c.BodyParser(&googleLoginBody); err != nil {
-			return fiber.ErrBadRequest
-		}
-
-		if err := middlewares.Validate(googleLoginBody); err != nil {
-			return err
-		}
-
-		user, err := userService.GoogleLogin(googleLoginBody.Code)
-		if err != nil {
-			return fiber.ErrInternalServerError
-		}
-		return c.JSON(user)
-	})
-
-	route.Post("/facebook-login", func(c *fiber.Ctx) error {
-		facebookLoginBody := new(models.UserFacebookLoginReq)
-
-		if err := c.BodyParser(&facebookLoginBody); err != nil {
-			return fiber.ErrBadRequest
-		}
-
-		if err := middlewares.Validate(facebookLoginBody); err != nil {
-			return err
-		}
-
-		user, err := userService.FacebookLogin(facebookLoginBody.AccessToken)
-		if err != nil {
-			return fiber.ErrInternalServerError
-		}
-		return c.JSON(user)
-	})
-
-	route.Put("/", middlewares.AuthToken, middlewares.UploadProfileFile, func(c *fiber.Ctx) error {
-		userBody := new(models.User)
-		req := c.Locals("user").(models.UserReq)
-		file := c.Locals("file").(string)
-
-		if err := c.BodyParser(&userBody); err != nil {
-			return fiber.ErrBadRequest
-		}
-
-		if err := middlewares.Validate(userBody); err != nil {
-			return err
-		}
-
-		result, err := userService.Update(req.User.UserID, userBody, file)
-		if err != nil {
-			return fiber.ErrInternalServerError
-		}
-
-		return c.JSON(result)
-	})
-
-	route.Delete("/", middlewares.AuthToken, func(c *fiber.Ctx) error {
-		req := c.Locals("user").(models.UserReq)
-
-		result, err := userService.Remove(req.User.UserID)
-		if err == fiber.ErrNotAcceptable {
-			return fiber.NewError(fiber.StatusNotAcceptable, "account have an order, cant be delete")
-		} else if err != nil {
-			return fiber.ErrInternalServerError
-		}
-
-		return c.JSON(result)
-	})
+	route.Post("/register", userService.Register)
+	route.Post("/google-login", userService.GoogleLogin)
+	route.Post("/facebook-login", userService.FacebookLogin)
+	route.Put("/", middlewares.AuthToken, middlewares.UploadProfileFile, userService.Update)
+	route.Delete("/", middlewares.AuthToken, userService.Remove)
 }
