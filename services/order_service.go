@@ -282,7 +282,7 @@ func (s *OrderService) findFoodOrderByUserId(id string) (*models.FoodOrderRes, e
 }
 
 func (s *OrderService) createOrderFood(orderId string, foodId string, food *models.FoodCart) error {
-	orderFood := &models.OrderFood{
+	orderFood := &models.OrderFoodCreate{
 		OrderID:          orderId,
 		FoodID:           foodId,
 		FoodAmount:       food.Amount,
