@@ -126,8 +126,12 @@ func (s *FoodService) Update(c *fiber.Ctx) error {
 		return err
 	}
 
-	if err := s.checkFoodPermission(user.User.Role, id); err != nil {
+	if err := s.checkFoodPermission(user.User.Role, id); err == fiber.ErrNotFound {
+		return fiber.NewError(fiber.StatusNotFound, "Food to update not found")
+	} else if err == fiber.ErrUnauthorized {
 		return fiber.NewError(fiber.StatusNotAcceptable, "No permission for this food. Please try another food")
+	} else if err != nil {
+		return fiber.ErrInternalServerError
 	}
 
 	if err := c.BodyParser(&foodBody); err != nil {
@@ -181,8 +185,12 @@ func (s *FoodService) Remove(c *fiber.Ctx) error {
 		return err
 	}
 
-	if err := s.checkFoodPermission(user.User.Role, id); err != nil {
+	if err := s.checkFoodPermission(user.User.Role, id); err == fiber.ErrNotFound {
+		return fiber.NewError(fiber.StatusNotFound, "Food to delete not found")
+	} else if err == fiber.ErrUnauthorized {
 		return fiber.NewError(fiber.StatusNotAcceptable, "No permission for this food. Please try another food")
+	} else if err != nil {
+		return fiber.ErrInternalServerError
 	}
 
 	config := config.LoadConfig()
@@ -225,6 +233,10 @@ func (s *FoodService) findFood(id string) (*models.Food, error) {
 	var results []models.Food
 	if err = cursor.All(context.TODO(), &results); err != nil {
 		return nil, err
+	}
+
+	if len(results) == 0 {
+		return nil, fiber.ErrNotFound
 	}
 
 	return &results[0], nil
