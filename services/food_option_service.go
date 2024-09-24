@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/food-order-server/models"
+	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -18,7 +19,14 @@ func CreateFoodOptionService(db *mongo.Database) *FoodOptionService {
 	}
 }
 
-func (s *FoodOptionService) FindAll() ([]models.FoodOption, error) {
+// @Summary Retrieve all food options
+// @Description Fetch a list of all food options with their associated choices.
+// @Tags Food Option
+// @Success 200 {array} models.FoodOption
+// @Failure 500 {object} models.MessageRes
+// @Security BearerAuth
+// @Router /food-option [get]
+func (s *FoodOptionService) FindAll(c *fiber.Ctx) error {
 	pipeline := mongo.Pipeline{
 		bson.D{{Key: "$lookup", Value: bson.D{
 			{Key: "from", Value: "option_choices"},
@@ -30,13 +38,13 @@ func (s *FoodOptionService) FindAll() ([]models.FoodOption, error) {
 
 	cursor, err := s.collection.Aggregate(context.TODO(), pipeline)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var foodOptions []models.FoodOption
 	if err := cursor.All(context.TODO(), &foodOptions); err != nil {
-		return nil, err
+		return fiber.ErrInternalServerError
 	}
 
-	return foodOptions, nil
+	return c.JSON(foodOptions)
 }
